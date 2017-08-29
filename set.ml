@@ -60,12 +60,17 @@ let rec product s1 s2 = match s1 with
 
 
 
+let rec subset s1 s2= match s1 with 
+                  []->true
+                  |x::xs-> match s2 with
+                           []-> false
+                           |y::ys-> if (member s2 x) then subset xs s2
+                                                   else false;;
 
-
-
-(*let rec power s= match s with
-                 []-> []
-                |x::xs->*) 
-
+let rec equalsets s1 s2= if (subset s1 s2) then 
+                                               (if (subset s2 s1) then true
+                                                                 else false)
+                                           else false;;
+                           
 
 
