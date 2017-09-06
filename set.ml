@@ -29,7 +29,7 @@ let rec map f l= match l with
                   |x::xs-> (f x)::(map f xs);;
 
 
-(* Function dedined to be used in powerset program*)
+(* Function defined to be used in powerset program*)
 let func a b = a::b;;
 
 (*1. emptyset s:- represents the empty set, if the given s set is empty or not.*)
