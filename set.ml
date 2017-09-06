@@ -1,10 +1,10 @@
 (*COL765 : ASSIGNMENT-1 : Submitted To: Prof. Sanjiva Prasad
-                 Submitted by: Khushboo Goel(2017MCS2084) 
+                 S        Submitted by: Khushboo Goel(2017MCS2084) 
 
 
 
 
-Assignmen is to represent finite sets (of any arbitrary type 'a)
+Assignment is to represent finite sets (of any arbitrary type 'a)
 
 (a) using OCaml lists.
     Representation invariant: a set is represented as a list without duplicates.*)
@@ -144,9 +144,7 @@ let rec equalsets s1 s2= if (subset s1 s2) then
 (* (b) Representing a set i by its characteristic function [Recall that f_s is the characteristic function of set s when x \in s iff  f_s (x) = true ]*)
 
 
-
-
-
+(*The two characteristic functions are defined below, namely funct_x and funct_y*)
 let funct_x l= match l with 
              1|3|7->true
              |_ ->false;;
@@ -161,31 +159,38 @@ let funct_y l= match l with
 let emptyset = false;;
 
 
-(* 2. member s x:- returns true if and only if x is in s.*)
+(* 2. member_cx s x:- returns true if and only if x is in s.*)
 let member_cx s x = s x;;
 
 
-(* 3. union s1 s2:- returns the union of sets s1 and s2*)
+(* 3. union_c s1 s2:- returns the union of sets s1 and s2. This function takes the a list as an input and compare it with the union of the two characteristic function s1 and s2*)
 let rec union_c s1 s2 x =  match x with
                         []->[]
                         |x::xs -> if ((s1 x) || (s2 x)) then true::(union_c s1 s2 xs) else false::(union_c s1 s2 xs);;
 
-(* 4. intersection s1 s2:- returns the intersection of s1 and s2*)
+
+(* 4. intersect_c s1 s2:- returns the intersection of s1 and s2. This function takes the a list as an input and compare it with the intersection of the two characteristic function s1 and s2*)
 let rec intersect_c s1 s2 x = match x with
                           []->[]
                           |x::xs -> if ((s1 x) && (s2 x)) then true::(intersect_c s1 s2 xs) else false::(intersect_c s1 s2 xs);;
 
 
-(* 5. difference s1 s2:- returns the set consisting of elements of s1 which are not in s2*)
+
+(* 5. difference_c s1 s2:- returns the set consisting of elements of s1 which are not in s2. This function takes the a list as an input and compare it with the set difference of the two characteristic function s1 and s2*)
 let rec difference_c s1 s2 x = match x with
                           []->[]
                           |x::xs -> if ((s1 x) && not( (s2 x))) then true::(difference_c s1 s2 xs) else false::(difference_c s1 s2 xs);;
 
 
-(* 6. product s1 s2:- returns the cartesian product of s1 and s2.*)
-let rec product_c s1 s2 x = (*match x with 
-                      (r,s)-> if ((s1 r) && (s2 s)) then true else false;;*)
 
-                        match x with
+(* 6. product_c s1 s2:- returns the cartesian product of s1 and s2. This function takes the a list as an input and compare it with the cartesian product of the two characteristic function s1 and s2*)
+let rec product_c s1 s2 x = match x with
                         []->[]
                         |(r,s)::rx -> if ((s1 r) && (s2 s)) then true::(product_c s1 s2 rx) else false::(product_c s1 s2 rx);;
+
+
+
+
+                           
+
+
