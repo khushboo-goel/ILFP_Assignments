@@ -1,5 +1,5 @@
 (*COL765 : ASSIGNMENT-1 : Submitted To: Prof. Sanjiva Prasad
-                 S        Submitted by: Khushboo Goel(2017MCS2084) 
+                          Submitted by: Khushboo Goel(2017MCS2084) 
 
 
 
