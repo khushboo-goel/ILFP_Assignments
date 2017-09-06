@@ -1,4 +1,10 @@
-(*ASSIGNMENT-1 : tO represent finite sets (of any arbitrary type 'a)
+(*COL765 : ASSIGNMENT-1 : Submitted To: Prof. Sanjiva Prasad
+                 Submitted by: Khushboo Goel(2017MCS2084) 
+
+
+
+
+Assignmen is to represent finite sets (of any arbitrary type 'a)
 
 (a) using OCaml lists.
     Representation invariant: a set is represented as a list without duplicates.*)
@@ -29,7 +35,7 @@ let rec map f l= match l with
                   |x::xs-> (f x)::(map f xs);;
 
 
-(* Function defined to be used in powerset program*)
+(* Function dedined to be used in powerset program*)
 let func a b = a::b;;
 
 (*1. emptyset s:- represents the empty set, if the given s set is empty or not.*)
@@ -55,23 +61,11 @@ let rec member s r= match s with
 (*3. card s:- returns the cardinality i.e. number of elements in the set s.*)
 let rec card s = match s with
                   []->0
-                 | x::xs-> if (islist s []) then (1 + (card xs))
-                                            else -1;;
-
+                 | x::xs-> 1 + (card xs);;
 
 
 
 (*4. union s1 s2:- returns the union of sets s1 and s2*)
-
-(*let rec union s1 s2 = match s1 with 
-                      []->if (islist s2 []) then s2 else []
-                     |x::xs -> if (islist s1 [])  then (match s2 with 
-								[]->s1 
-							       | y::ys-> if (islist s2 []) then (if (member s2 x) then (union xs s2)
-								                        			else x ::(union xs s2 ))
-		                                                                            else [])
-                                                   else [];;*)
-
 let rec union s1 s2 = match s1 with 
                           []->s2
                           |x::xs -> match s2 with 
@@ -79,18 +73,9 @@ let rec union s1 s2 = match s1 with
                                      | y::ys-> if (member s2 x) then (union xs s2)
                                                               else x ::(union xs s2 );;
 
+
+
 (*5. intersection s1 s2:- returns the intersection of s1 and s2*)
-(*let rec intersect s1 s2 = match s1 with 
-                      []->[]
-                     |x::xs -> if (islist s1 [])  then (match s2 with 
-								[]->[] 
-							       | y::ys-> if (islist s2 []) then (if (member s2 x) then x::intersect xs s2
-								                        			else intersect xs s2)
-		                                                                            else [])
-                                                   else [];;*)
-
-
-
 let rec intersect s1 s2 = match s1 with 
                           []->[]
                           |x::xs -> match s2 with 
@@ -152,7 +137,15 @@ let rec equalsets s1 s2= if (subset s1 s2) then
 
 
 
+
+
+
+
 (* (b) Representing a set i by its characteristic function [Recall that f_s is the characteristic function of set s when x \in s iff  f_s (x) = true ]*)
+
+
+
+
 
 let funct_x l= match l with 
              1|3|7->true
@@ -173,23 +166,26 @@ let member_cx s x = s x;;
 
 
 (* 3. union s1 s2:- returns the union of sets s1 and s2*)
-let union_c s1 s2 x = if ((s1 x) || (s2 x)) then true else false;;
+let rec union_c s1 s2 x =  match x with
+                        []->[]
+                        |x::xs -> if ((s1 x) || (s2 x)) then true::(union_c s1 s2 xs) else false::(union_c s1 s2 xs);;
 
 (* 4. intersection s1 s2:- returns the intersection of s1 and s2*)
-let intersect_c s1 s2 x = if ((s1 x) && (s2 x)) then true else false;;
+let rec intersect_c s1 s2 x = match x with
+                          []->[]
+                          |x::xs -> if ((s1 x) && (s2 x)) then true::(intersect_c s1 s2 xs) else false::(intersect_c s1 s2 xs);;
 
 
 (* 5. difference s1 s2:- returns the set consisting of elements of s1 which are not in s2*)
-let difference_c s1 s2 x = if ((s1 x) && (not(s2 x))) then true else false;;
+let rec difference_c s1 s2 x = match x with
+                          []->[]
+                          |x::xs -> if ((s1 x) && not( (s2 x))) then true::(difference_c s1 s2 xs) else false::(difference_c s1 s2 xs);;
 
 
 (* 6. product s1 s2:- returns the cartesian product of s1 and s2.*)
-let product_c s1 s2 x = match x with 
-                      (r,s)-> if ((s1 r) && (s2 s)) then true else false;;
+let rec product_c s1 s2 x = (*match x with 
+                      (r,s)-> if ((s1 r) && (s2 s)) then true else false;;*)
 
-
-
-
-                           
-
-
+                        match x with
+                        []->[]
+                        |(r,s)::rx -> if ((s1 r) && (s2 s)) then true::(product_c s1 s2 rx) else false::(product_c s1 s2 rx);;
