@@ -1,0 +1,114 @@
+
+As given in assignment, here are a few examples to prove that if the input set(s) satisfy the Representational Invariant, then so do the sets returned by the operations emptyset, union, intersection, difference, product, power.
+
+let a=[1;2;3;4];;
+val a : int list = [1; 2; 3; 4]
+
+#  let b=[2;3;5;7;8;9];;
+val b : int list = [2; 3; 5; 7; 8; 9]
+
+# islist a [];;
+- : bool = true
+
+# islist b [];;
+- : bool = true
+
+# islist (union a b) [];;
+- : bool = true
+
+# islist (intersect a b) [];;
+- : bool = true
+
+# islist (difference a b) [];;
+- : bool = true
+
+# islist (product a b) [];;
+- : bool = true
+
+# islist (powerset a) [];;
+- : bool = true
+
+# islist emptyset [];;
+- : bool = true
+
+
+
+Here we are trying to define the sets and prove the laws associated with them:
+
+#let a=[1;2;3;4];;
+val a : int list = [1; 2; 3; 4]
+
+
+# let b=[2;3;5;7;8;9];;
+val b : int list = [2; 3; 5; 7; 8; 9]
+
+
+1.member x emptyset = false 
+# member emptyset 3;;
+- : bool = false
+
+
+2.cardinality emptyset = 0
+#card emptyset;;
+- : int = 0
+
+
+3.member x s1  implies member x (union s1 s2)
+# member a 4 ;;
+- : bool = true
+# member (union a b) 4;;
+- : bool = true
+
+
+4. member x (intersection s1 s2) implies member x s1
+# member (intersect a b) 2;;
+- : bool = true
+# member b 2;;
+- : bool = true
+
+
+5. equalset (intersection s1 s2)  (intersection s2 s1)
+# equalsets (intersect a b) (intersect a b);;
+- : bool = true
+
+
+6. cardinality (product s1 s2) = cardinality s1 * cardinality s2
+# card (product a b);;
+- : int = 24
+# (card a) * (card b);;
+- : int = 24
+
+
+Here we are trying to show the input taken preserve the characteristic function of the set: 
+
+# product_c funct_x funct_y [(1,2);(3,4)];;
+- : bool list = [true; false]
+
+# union_c funct_x funct_y [1;2;3;4];;
+- : bool list = [true; true; true; false]
+
+#intersect_c funct_x funct_y [1;2;3;4];;
+ - : bool list = [false; false; true; false]
+
+#difference_c funct_x funct_y [1;2;3;4];;
+- : bool list = [true; false; false; false]
+
+#member_cx funct_x 2;;
+- : bool = false
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
