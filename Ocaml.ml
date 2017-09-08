@@ -1,8 +1,10 @@
-type prop = P of string | T | F
-
-    | Not of prop | And of prop * prop
-
-    | Or of prop * prop | Implies of prop * prop
+type prop = P of string
+            | T 
+            | F
+            | Not of prop 
+            | And of prop * prop
+            | Or of prop * prop 
+            | Implies of prop * prop
 
 ;;
 
@@ -57,14 +59,14 @@ let rec truth p rho  = match p with
                ;;
 
 
-let rec nnf p    = match p with
+let rec nnf p = match p with
                   T->T
                  |F->F
                  |P(n)->nnf p
                  |Not(p)-> (match p with 
                            T->F
                           |F->T
-                          |P(n)->nnf p
+                          |P(n)-> Not (p)
                           |Not(p)-> nnf p 
 		          |And(p1, p2)->Or ((nnf (Not p1)),(nnf (Not p2)))
 		          |Or(p1, p2)-> And ( (nnf (Not p1)),(nnf (Not p2)))
@@ -75,40 +77,44 @@ let rec nnf p    = match p with
                  |Implies (p1, p2)-> And( (Not(nnf p1)), (nnf p2))
                ;;
 
-let rec cnf p = match p with
-                  T->T
-                 |F->F
-                 |P(n)->p
-                 |Not(p)-> nnf p
-		 |And(p1, p2)-> And((cnf p1),(cnf p2))
-                 |Or(p1, p2)-> nnf (Not(And ((Not p1), (Not p2))))
-                 |Implies (p1, p2)-> nnf (Not(And ((Not (Not p1)), (Not p2))))
-               ;;
+
+let rec distributive_or p1 p2= match p2 with 
+                            And(px, py)-> And ( (distributive_or p1 px), (distributive_or p1 py))
+                            | px ->( match p1 with
+                                    And(pr, ps)-> And ((distributive_or pr p2),( distributive_or ps p2))
+                                    | pr -> Or(p1, p2) )
+;;
+
+let rec distributive_and p1 p2= match p2 with 
+                            Or(px, py)-> Or ( (distributive_and p1 px), (distributive_and p1 py))
+                            | px ->( match p1 with
+                                    Or(pr, ps)-> Or ((distributive_and pr p2),( distributive_and ps p2))
+                                    | pr -> And(p1, p2) )
+;; 
 
 
+let rec cnf_s p =match p with
+               P(n)->p
+              | T->T
+              | F->F
+              | Not(p)-> Not (cnf_s p)
+              | And(p1, p2) -> And(cnf_s p1, cnf_s p2)
+              | Or (p1, p2) -> distributive_or (cnf_s p1) (cnf_s p2)
+              | Implies (p1, p2) -> distributive_or ((nnf (Not (p1))), (p2))
+;;
 
-let rec distr_or p1 p2 = match (p1, p2) with
-| (p, And (p21, p22)) -> And (distr_or p p21 , distr_or p p22)
-| (And (p11, p12), p) -> And (distr_or p11 p, distr_or p12 p)
-| (p1, p2) -> Or (p1, p2);;
+let cnf s = cnf_s (nnf s);; 
 
-let rec cnf_prop p = match p with
-|P s -> p
-| T -> p
-| F -> p
-| Not p1 -> p
-| And (p1, p2) -> And (cnf_prop p1, cnf_prop p2)
-| Or (p1, p2) -> distr_or (cnf_prop p1) (cnf_prop p2);;
+let rec dnf_s p =match p with
+                P(n)->p
+              | T-> T
+              | F-> F
+              | Not(p)-> Not (dnf_s p)
+              | And(p1, p2) -> distributive_and (dnf_s p1) (dnf_s p2)
+              | Or (p1, p2) -> Or ((dnf_s p1),( dnf_s p2))
+              | Implies (p1, p2) -> Or ((nnf(Not (dnf_s p1))),(dnf_s p2))
+;;
 
+let dnf s = dnf_s (nnf s);;
 
-let rec flatten_or_cnf p = match p with 
- Or (p1, p2) -> (flatten_or_cnf p1) @ (flatten_or_cnf p2)
-| l -> [l];;
-
-let rec flatten_and_cnf = function
-| And (p1, p2) -> (flatten_and_cnf p1) @ (flatten_and_cnf p2)
-| l -> [flatten_or_cnf l];;
-
-(*cnf function: prop -> prop set set returns cnf of a given propositions as a list of list containing unique elements*)
-let cnf p = (flatten_and_cnf (cnf_prop (nnf p)));;
-
+let a = Not (Or (And ( (P("raining")),(P("studying"))), P("learning") ));;
