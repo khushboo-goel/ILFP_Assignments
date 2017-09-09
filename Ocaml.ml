@@ -45,7 +45,7 @@ let rec letter p = match p with
                ;;
 
 let rho s = match s with
-            |"playing"->true|"raining"->true|"studying"->true| x->false;;
+            "playing"->true|"raining"->true|"studying"->true| x->false;;
 
 
 let rec truth p rho  = match p with
@@ -131,9 +131,31 @@ let rec tautology p =match p with
 
 let isTautology p = tautology (dnf p);;
 
-let isContradiction p = if (not(isTautology p)) then true else false;;
+let rec contradiction p = match p with
+                          T->false
+                         |F->true
+                         |P(n)-> if (truth p rho) then false else true
+                         |Not (p) -> if (truth p rho) then true else false
+                         |And(p1, p2)-> if ((contradiction p1) || (contradiction p2)) then true else false
+                         |Or (p1, p2)-> if ((contradiction p1) && (contradiction p2)) then true else false
+                         |Implies (p1, p2)-> if ((not (contradiction p1)) && (contradiction p2)) then true else false
+                    ;;
+
+let isContradiction p = contradiction (cnf p);;
 
 
-let isSatisfiable
-let isEquivalent
-let entails
+let isSatisfiable p = if (not(isContradiction p)) then true else false;;
+
+
+let isEquivalent p1 p2 = if ((truth p1 rho)=(truth p2 rho)) then true else false;;
+
+ 
+let entails p1 p2 = if (truth p1 rho)  then (if (truth p2 rho) then true else false)
+                                       else false;;
+
+
+
+
+
+
+
