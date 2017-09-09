@@ -100,7 +100,7 @@ let rec cnf_s p =match p with
               | Not(p)-> Not (cnf_s p)
               | And(p1, p2) -> And(cnf_s p1, cnf_s p2)
               | Or (p1, p2) -> distributive_or (cnf_s p1) (cnf_s p2)
-              | Implies (p1, p2) -> distributive_or ((nnf (Not (p1))), (p2))
+              | Implies (p1, p2) -> distributive_or (nnf (Not (cnf_s p1))) (cnf_s p2)
 ;;
 
 let cnf s = cnf_s (nnf s);; 
@@ -118,3 +118,22 @@ let rec dnf_s p =match p with
 let dnf s = dnf_s (nnf s);;
 
 let a = Not (Or (And ( (P("raining")),(P("studying"))), P("learning") ));;
+
+let rec tautology p =match p with
+                          T->true
+                         |F->false
+                         |P(n)-> if (truth p rho) then true else false
+                         |Not (p) -> if (truth p rho) then false else true
+                         |And(p1, p2)-> if ((tautology p1) && (tautology p2)) then true else false
+                         |Or (p1, p2)-> if ((tautology p1) || (tautology p2)) then true else false
+                         |Implies (p1, p2)-> if ((not (tautology p1)) || (tautology p2)) then true else false
+                    ;;
+
+let isTautology p = tautology (dnf p);;
+
+let isContradiction p = if (not(isTautology p)) then true else false;;
+
+
+let isSatisfiable
+let isEquivalent
+let entails
