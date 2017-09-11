@@ -29,6 +29,14 @@ let rec prop_ret p= match p with
 		    | Not(p) -> Not (p)
                     ;;
 
+let rec find_val s r= match s with
+                  []->false
+                 |x::xs-> if (x=r) then true
+                                   else find_val xs r;;
+
+let rec find_prop p = match p with
+                      [x]->false
+                     |x::xs-> if (find_val xs (Not(x))) then true else find_prop xs;;
 
 (*1. height: prop -> int, which returns the height of a proposition (height of the operator tree, counting from 0).*)
 let rec height p = match p with
@@ -180,11 +188,9 @@ let dnf_prop s = dnf_s (nnf s);;
 
 let dnf s= dnf_set (dnf_prop s);;
 
-
-
     
 (*8. isTautology: prop -> bool, which checks if a proposition is a tautology.*)    
-let rec tautology p =match p with
+(*let rec tautology p =match p with
                           T->true
                          |F->false
                          |P(n)-> if (truth p rho) then true else false
@@ -192,15 +198,18 @@ let rec tautology p =match p with
                          |And(p1, p2)-> if ((tautology p1) && (tautology p2)) then true else false
                          |Or (p1, p2)-> if ((tautology p1) || (tautology p2)) then true else false
                          |Implies (p1, p2)-> if ((not (tautology p1)) || (tautology p2)) then true else false
-                    ;;
+                    ;;*)
+
+let rec tautology   p = match p with
+                            []->false
+                           |x::xs->if (find_prop x) then true else (tautology xs);;
 
 let isTautology p = tautology (dnf_set p);;
 
 
 
-
 (*9. isContradiction: prop -> bool, which checks if a proposition is a contradiction.*)
-let rec contradiction p = match p with
+(*let rec contradiction p = match p with
                           T->false
                          |F->true
                          |P(n)-> if (truth p rho) then false else true
@@ -209,6 +218,14 @@ let rec contradiction p = match p with
                          |Or (p1, p2)-> if ((contradiction p1) && (contradiction p2)) then true else false
                          |Implies (p1, p2)-> if ((not (contradiction p1)) && (contradiction p2)) then true else false
                     ;;
+*)
+
+
+
+
+let rec contradiction p = match p with
+                            []->false
+                           |x::xs->if (find_prop x) then true else (contradiction xs);;
 
 let isContradiction p = contradiction (cnf_set p);;
 
@@ -220,13 +237,13 @@ let isSatisfiable p = if (not(isContradiction p)) then true else false;;
 
 
 (*11. isEquivalent: prop -> prop -> bool, which checks if two propositions are logically equivalent.*)
-let isEquivalent p1 p2 = if ((truth p1 rho)=(truth p2 rho)) then true else false;;
+let isEquivalent p1 p2 = if (((isTautology p1)=(isTautology p2))|| ((isContradiction p1)=(isContradiction p2))) then true else false;;
 
 
 
 
 (*12. entails: prop -> prop -> bool, which checks if the second proposition is a logical consequence of the first proposition.*) 
-let entails p1 p2 = if (truth p1 rho)  then (if (truth p2 rho) then true else false)
+let entails p1 p2 = if (isTautology p1)  then (if (isTautology p2) then true else false)
                                        else false;;
 
 
@@ -234,7 +251,7 @@ let entails p1 p2 = if (truth p1 rho)  then (if (truth p2 rho) then true else fa
 (*These are some functions to convert DNF list of list form into propositional form*)
 let rec con_d p= match p with
                  [x]-> x
-                 |x::xs-> And(x, con_c xs);;
+                 |x::xs-> And(x, con_d xs);;
 
 let rec convert_prop_d p = match p with
                            [x]-> con_d x
