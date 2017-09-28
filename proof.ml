@@ -94,7 +94,7 @@ let rec ht x = match x with
                  |NotClass(p,s)-> ht(p)+1 
                  |NotIntu(p,s)-> ht(p)+1 ;;              
 
-let rec size x=match x with
+let rec size x = match x with
                   Ass(s)->1 
                  |TI(s) ->1 
                  |FE(s) ->1
@@ -111,206 +111,205 @@ let rec size x=match x with
 
 
 (*Define the function wfprooftree that check that a given candidate proof tree is indeed a well-formed proof tree (i.e., the main formula is of the form expected by the rule, the side formulas are consistent with the main formula, and the extra formulas agree as specified in each rule).*)
-(*let rec verify p2 y g1 = match p2 with 
-                                                                                                                                                                                                           Ass((g2,r2))-> (if (equalsets g g2) && (r2= x) then true else false)
-                                                                                                                                                                                                           |TI((g2,r2)) -> (if (equalsets g g2) && (r2 = x) then true else false)
-                                                                                                                                                                                                           |FE((g2,r1)) ->(if (equalsets g g2) && (r2 = x) then true else false)
-                                                                                                                                                                                                           |ImpI(px2,(g2,r2))->(if (equalsets g g2) && (r2 =x) then true else false) 
-                                                                                                                                                                                                           |ImpE(px,py,(g1,r1))-> (if (equalsets g g2) && (r2 =x) then true else false)
-                                                                                                                                                                                                           |AndI(px,py,(g1,r1))-> (if (equalsets g g2) && (r2 =x) then true else false)
-                                                                                                                                                                                                           |AndEleft(px,(g1,r1))-> (if (equalsets g g2) && (r2 =x) then true else false)
-                                                                                                                                                                                                           |AndEright(px,(g1,r1))-> (if (equalsets g g2) && (r2 =x) then true else false)
-                                                                                                                                                                                                           |OrIleft(px,(g1,r1))-> (if (equalsets g g2) && (r2 =x) then true else false)
-                                                                                                                                                                                                           |OrIright(px,(g1,r1))-> (if (equalsets g g2) && (r2 =x) then true else false)
-                                                                                                                                                                                                           |OrE(px,py,pz,(g1,r1))->(if (equalsets g g2) && (r2 =x) then true else false)
-                                                                                                                                                                                                           |NotClass(px,(g1,r1))-> (if (equalsets g g2) && (r2 =x) then true else false) 
-                                                                                                                                                                                                           |NotIntu(px,(g1,r1))->(if (equalsets g g2) && (r2 =x) then true else false)
-                                                                                                                                                                                                           |_->false;;
 
+let rec verify x y z = match x with
+                         Ass((g,r))-> (if ((equalsets y g) && (r=z)) then true else false)
+                        |TI((g,r)) ->(if ((equalsets y g) && (r=z)) then true else false) 
+                        |FE((g,r)) ->(if ((equalsets y g) && (r=z)) then true else false)
+                        |ImpI(p,(g,r))->(if ((equalsets y g) && (r=z)) then true else false)
+                        |ImpE(p1,p2,(g,r))->(if ((equalsets y g) && (r=z)) then true else false)
+                        |AndI(p1,p2,(g,r))-> (if ((equalsets y g) && (r=z)) then true else false)
+                        |AndEleft(p,(g,r))-> (if ((equalsets y g) && (r=z)) then true else false)
+                        |AndEright(p,(g,r))-> (if ((equalsets y g) && (r=z)) then true else false)
+                        |OrIleft(p,(g,r))-> (if ((equalsets y g) && (r=z)) then true else false)
+                        |OrIright(p,(g,r))-> (if ((equalsets y g) && (r=z)) then true else false)
+                        |OrE(p1,p2,p3,(g,r))-> (if ((equalsets y g) && (r=z)) then true else false)
+                        |NotClass(p,(g,r))-> (if ((equalsets y g) && (r=z)) then true else false)
+                        |NotIntu(p,(g,r))-> (if ((equalsets y g) && (r=z)) then true else false)
+                         ;; 
+let rec verify_or a b c d= match a with
+                         Ass((g,r))-> if (find_val g b) && (r=c) && (equalsets g (union d [b])) then true else false
+                        |TI((g,r)) -> if (find_val g b) && (r=c) && (equalsets g (union d [b])) then true else false
+                        |FE((g,r)) -> if (find_val g b) && (r=c) && (equalsets g (union d [b])) then true else false
+                        |ImpI(p,(g,r))-> if (find_val g b) && (r=c) && (equalsets g (union d [b])) then true else false
+                        |ImpE(p1,p2,(g,r))-> if (find_val g b) && (r=c) && (equalsets g (union d [b])) then true else false
+                        |AndI(p1,p2,(g,r))-> if (find_val g b) && (r=c) && (equalsets g (union d [b])) then true else false
+                        |AndEleft(p,(g,r))->  if (find_val g b) && (r=c) && (equalsets g (union d [b])) then true else false
+                        |AndEright(p,(g,r))->  if (find_val g b) && (r=c) && (equalsets g (union d [b])) then true else false
+                        |OrIleft(p,(g,r))->  if (find_val g b) && (r=c) && (equalsets g (union d [b])) then true else false
+                        |OrIright(p,(g,r))-> if (find_val g b) && (r=c) && (equalsets g (union d [b])) then true else false
+                        |OrE(p1,p2,p3,(g,r))-> if (find_val g b) && (r=c) && (equalsets g (union d [b])) then true else false
+                        |NotClass(p,(g,r))-> if (find_val g b) && (r=c) && (equalsets g (union d [b])) then true else false
+                        |NotIntu(p,(g,r))-> if (find_val g b) && (r=c) && (equalsets g (union d [b])) then true else false
+                        ;;
 
-let rec wfprooftree u = match u with
-                         Ass((g,r))-> (if (find_val g r) then true else false)
-		                    |TI((g,r)) -> (if(r=T) then true else false) 
-						            (*|FE((g,r)) ->(if((find_val g [F]) and (find_val g r)) then true else false);;*) 
-						            |ImpI(p,(g,Implies(x,y)))-> (if (wfprooftree p) then (match p with Ass((g1,r1))-> (if (equalsets(union g [x]) g1) && (r1 =y) then true else false)
-																					 |TI((g1,r1)) -> (if (equalsets(union g [x]) g1) && (r1 = y) then true else false)
-																					 |FE((g1,r1)) ->(if (equalsets(union g [x]) g1) && (r1 = y) then true else false)
-																					 |ImpI(px,(g1,r1))->(if (equalsets(union g [x]) g1) && (r1 =y) then true else false) 
-																					 |ImpE(px,py,(g1,r1))-> (if (equalsets(union g [x]) g1) && (r1 =y) then true else false)
-																					 |AndI(px,py,(g1,r1))-> (if (equalsets(union g [x]) g1) && (r1 =y) then true else false)
-																					 |AndEleft(px,(g1,r1))-> (if (equalsets(union g [x]) g1) && (r1 =y) then true else false)
-																					 |AndEright(px,(g1,r1))-> (if (equalsets(union g [x]) g1) && (r1 =y) then true else false)
-																					 |OrIleft(px,(g1,r1))-> (if (equalsets(union g [x]) g1) && (r1 =y) then true else false)
-																					 |OrIright(px,(g1,r1))-> (if (equalsets(union g [x]) g1) && (r1 =y) then true else false)
-																					 |OrE(px,py,pz,(g1,r1))->(if (equalsets(union g [x]) g1) && (r1 =y) then true else false)
-																					 |NotClass(px,(g1,r1))-> (if (equalsets(union g [x]) g1) && (r1 =y) then true else false) 
-																					 |NotIntu(px,(g1,r1))->(if (equalsets(union g [x]) g1) && (r1 =y) then true else false)
-                                           |_-> false)
-						                                                  else false)
-						 |ImpE(p1,p2,(g,r))-> (if ((wfprooftree p1) && (wfprooftree p2)) then ( (match p1 with
-                                                                                           Ass((g1,Implies(x,y)))-> (if (equalsets g g1) && (r =y) then verify p2 y g1 else false)
-                                                                                           |TI((g1,Implies(x,y))) -> (if (equalsets g g1) && (r = y) then true else false)
-                                                                                           |FE((g1,Implies(x,y))) ->(if (equalsets g g1) && (r = y) then true else false)
-                                                                                           |ImpI(px,(g1,Implies(x,y)))->(if (equalsets g g1) && (r =y) then true else false) 
-                                                                                           |ImpE(px,py,(g1,Implies(x,y)))-> (if (equalsets g g1) && (r =y) then true else false)
-                                                                                           |AndI(px,py,(g1,Implies(x,y)))-> (if (equalsets g g1) && (r =y) then true else false)
-                                                                                           |AndEleft(px,(g1,Implies(x,y)))-> (if (equalsets g g1) && (r =y) then true else false)
-                                                                                           |AndEright(px,(g1,Implies(x,y)))-> (if (equalsets g g1) && (r =y) then true else false)
-                                                                                           |OrIleft(px,(g1,Implies(x,y)))-> (if (equalsets g g1) && (r =y) then true else false)
-                                                                                           |OrIright(px,(g1,Implies(x,y)))-> (if (equalsets g g1) && (r =y) then true else false)
-                                                                                           |OrE(px,py,pz,(g1,Implies(x,y)))->(if (equalsets g g1) && (r =y) then true else false)
-                                                                                           |NotClass(px,(g1,Implies(x,y)))-> (if (equalsets g g1) && (r =y) then true else false) 
-                                                                                           |NotIntu(px,(g1,Implies(x,y)))->(if (equalsets g g1) && (r =y) then true else false)
-                                                                                           |_-> false
-                                                                                                                                                                                ) && match p2 with 
-                                                                                                                                                                                                           Ass((g2,r2))-> (if (equalsets g g2) && (r2= x) then true else false)
-                                                                                                                                                                                                           |TI((g2,r2)) -> (if (equalsets g g2) && (r2 = x) then true else false)
-                                                                                                                                                                                                           |FE((g2,r1)) ->(if (equalsets g g2) && (r2 = x) then true else false)
-                                                                                                                                                                                                           |ImpI(px2,(g2,r2))->(if (equalsets g g2) && (r2 =x) then true else false) 
-                                                                                                                                                                                                           |ImpE(px,py,(g1,r1))-> (if (equalsets g g2) && (r2 =x) then true else false)
-                                                                                                                                                                                                           |AndI(px,py,(g1,r1))-> (if (equalsets g g2) && (r2 =x) then true else false)
-                                                                                                                                                                                                           |AndEleft(px,(g1,r1))-> (if (equalsets g g2) && (r2 =x) then true else false)
-                                                                                                                                                                                                           |AndEright(px,(g1,r1))-> (if (equalsets g g2) && (r2 =x) then true else false)
-                                                                                                                                                                                                           |OrIleft(px,(g1,r1))-> (if (equalsets g g2) && (r2 =x) then true else false)
-                                                                                                                                                                                                           |OrIright(px,(g1,r1))-> (if (equalsets g g2) && (r2 =x) then true else false)
-                                                                                                                                                                                                           |OrE(px,py,pz,(g1,r1))->(if (equalsets g g2) && (r2 =x) then true else false)
-                                                                                                                                                                                                           |NotClass(px,(g1,r1))-> (if (equalsets g g2) && (r2 =x) then true else false) 
-                                                                                                                                                                                                           |NotIntu(px,(g1,r1))->(if (equalsets g g2) && (r2 =x) then true else false)
-                                                                                                                                                                                                           |_->false)  else false)
-						 |AndI(p1,p2,(g,And(x,y)))->(if ((wfprooftree p1) && (wfprooftree p2)) then ((match p1 with
-                                                                                           Ass((g1,r1))-> (if (equalsets g g1) && (r1 =x) then true else false)
-                                                                                           |TI((g1,r1)) -> (if (equalsets g g1) && (r1 = x) then true else false)
-                                                                                           |FE((g1,r1)) ->(if (equalsets g g1) && (r1 = x) then true else false)
-                                                                                           |ImpI(px,(g1,r1))->(if (equalsets g g1) && (r1 =x) then true else false) 
-                                                                                           |ImpE(px,py,(g1,r1))-> (if (equalsets g g1) && (r1 =x) then true else false)
-                                                                                           |AndI(px,py,(g1,r1))-> (if (equalsets g g1) && (r1 =x) then true else false)
-                                                                                           |AndEleft(px,(g1,r1))-> (if (equalsets g g1) && (r1 =x) then true else false)
-                                                                                           |AndEright(px,(g1,r1))-> (if (equalsets g g1) && (r1 =x) then true else false)
-                                                                                           |OrIleft(px,(g1,r1))-> (if (equalsets g g1) && (r1 =x) then true else false)
-                                                                                           |OrIright(px,(g1,r1))-> (if (equalsets g g1) && (r1 =x) then true else false)
-                                                                                           |OrE(px,py,pz,(g1,r1))->(if (equalsets g g1) && (r1 =x) then true else false)
-                                                                                           |NotClass(px,(g1,r1))-> (if (equalsets g g1) && (r1 =x) then true else false) 
-                                                                                           |NotIntu(px,(g1,r1))->(if (equalsets g g1) && (r1 =x) then true else false)
-                                                                                           |_->false
-                                                                                                                                                                                )) && (match p2 with 
-                                                                                                                                                                                                           Ass((g2,r2))-> (if (equalsets g g2) && (r1 =y) then true else false)
-                                                                                                                                                                                                           |TI((g2,r2)) -> (if (equalsets g g2) && (r1 = y) then true else false)
-                                                                                                                                                                                                           |FE((g2,r1)) ->(if (equalsets g g2) && (r1 = y) then true else false)
-                                                                                                                                                                                                           |ImpI(px2,(g2,r2))->(if (equalsets g g2) && (r1 =y) then true else false) 
-                                                                                                                                                                                                           |ImpE(px,py,(g1,r1))-> (if (equalsets g g2) && (r1 =y) then true else false)
-                                                                                                                                                                                                           |AndI(px,py,(g1,r1))-> (if (equalsets g g2) && (r1 =y) then true else false)
-                                                                                                                                                                                                           |AndEleft(px,(g1,r1))-> (if (equalsets g g2) && (r1 =y) then true else false)
-                                                                                                                                                                                                           |AndEright(px,(g1,r1))-> (if (equalsets g g2) && (r1 =y) then true else false)
-                                                                                                                                                                                                           |OrIleft(px,(g1,r1))-> (if (equalsets g g2) && (r1 =y) then true else false)
-                                                                                                                                                                                                           |OrIright(px,(g1,r1))-> (if (equalsets g g2) && (r1 =y) then true else false)
-                                                                                                                                                                                                           |OrE(px,py,pz,(g1,r1))->(if (equalsets g g2) && (r1 =y) then true else false)
-                                                                                                                                                                                                           |NotClass(px,(g1,r1))-> (if (equalsets g g2) && (r1 =y) then true else false) 
-                                                                                                                                                                                                           |NotIntu(px,(g1,r1))->(if (equalsets g g2) && (r1 =y) then true else false)
-                                                                                                                                                                                                           |_->false)  else false)						 
-						  |AndEleft(p,(g,r))-> (if (wfprooftree p) then ( match p with 
-                                                             |TI((g1,And(x,y))) -> (if ((r=x) and (equalsets g g1)) then true else false)
-                                                             |FE((g1,And(x,y))) ->(if ((r=x) and (equalsets g g1)) then true else false)
-                                                             |ImpI(px,(g1,r1))->(false)
-                                                             |ImpE(px,py,(g1,And(x,y)))->(if ((r=x) and (equalsets g g1)) then true else false)
-                                                             |AndI(px,py,(g1,And(x,y)))-> (if ((r=x) and (equalsets g g1)) then true else false)
-                                                             |AndEleft(px,(g1,And(x,y)))-> (if ((r=x) and (equalsets g g1)) then true else false)
-                                                             |AndEright(px,(g1,And(x,y)))-> (if ((r=x) and (equalsets g g1)) then true else false)
-                                                             |OrIleft(px,(g1,And(x,y)))-> (false)
-                                                             |OrIright(px,(g1,And(x,y)))-> (false)
-                                                             |OrE(px,py,pz,(g1,And(x,y)))->(if ((r=x) and (equalsets g g1)) then true else false)
-                                                             |NotClass(px,(g1,And(x,y)))-> (if ((r=x) and (equalsets g g1)) then true else false) 
-                                                             |NotIntu(px,(g1,And(x,y)))->(if ((r=x) and (equalsets g g1)) then true else false)
-                                                             |_-> false)  else false)
-						 |AndEright(p,(g,r))-> (if (wfprooftree p) then (  match p with 
-                                                              Ass((g1,And(x,y)))-> (if (( r=y) and (equalsets g g1)) then true else false)
-                                                             |TI((g1,And(x,y))) -> (if (( r=y) and (equalsets g g1)) then true else false)
-                                                             |FE((g1,And(x,y))) ->(if (( r=y) and (equalsets g g1)) then true else false)
-                                                             |ImpI(px,(g1,r1))->(false)
-                                                             |ImpE(px,py,(g1,And(x,y)))->(if (( r=y) and (equalsets g g1)) then true else false)
-                                                             |AndI(px,py,(g1,And(x,y)))-> (if (( r=y) and (equalsets g g1)) then true else false)
-                                                             |AndEleft(px,(g1,And(x,y)))-> (if (( r=y) and (equalsets g g1)) then true else false)
-                                                             |AndEright(px,(g1,And(x,y)))-> (if (( r=y) and (equalsets g g1)) then true else false)
-                                                             |OrIleft(px,(g1,And(x,y)))-> (false)
-                                                             |OrIright(px,(g1,And(x,y)))-> (false)
-                                                             |OrE(px,py,pz,(g1,And(x,y)))->(if (( r=y) and (equalsets g g1)) then true else false)
-                                                             |NotClass(px,(g1,And(x,y)))-> (if (( r=y) and (equalsets g g1)) then true else false) 
-                                                             |NotIntu(px,(g1,And(x,y)))->(if (( r=y) and (equalsets g g1)) then true else false)
-                                                             |_-> false )  else false)
-						 |OrIleft(p,(g,Or(x,y)))-> (if (wfprooftree p) then ( match p with 
-                                                              Ass((g1,r1))-> (if (( r1=x) and (equalsets g g1)) then true else false)
-                                                             |TI(g1,r1) -> (if (( r1=x) and (equalsets g g1)) then true else false)
-                                                             |FE((g1, r1)) ->(if (( r1=x) and (equalsets g g1)) then true else false)
-                                                             |ImpI(px,(g1,r1))->(if (( r1=x) and (equalsets g g1)) then true else false)
-                                                             |ImpE(px,py,(g1,r1 ))->(if (( r1=x) and (equalsets g g1)) then true else false)
-                                                             |AndI(px,py,(g1,r1 ))->(if (( r1=x) and (equalsets g g1)) then true else false)
-                                                             |AndEleft(px,(g1,r1))->(if (( r1=x) and (equalsets g g1)) then true else false)
-                                                             |AndEright(px,(g1,r1))->(if (( r1=x) and (equalsets g g1)) then true else false)
-                                                             |OrIleft(px,(g1,r1))->(if (( r1=x) and (equalsets g g1)) then true else false)
-                                                             |OrIright(px,(g1,r1 ))->(if (( r1=x) and (equalsets g g1)) then true else false)
-                                                             |OrE(px,py,pz,(g1,r1))->(if (( r1=x) and (equalsets g g1)) then true else false)
-                                                             |NotClass(px,(g1,r1 ))->(if (( r1=x) and (equalsets g g1)) then true else false) 
-                                                             |NotIntu(px,(g1, r1))->(if (( r1=x) and (equalsets g g1)) then true else false)
-                                                             |_-> false )  else false)
-						|OrIright(p,(g,Or(x,y)))-> (if (wfprooftree p) then (  match p with 
-                                                              Ass((g1,r1))-> (if (( r1=y) and (equalsets g g1)) then true else false)
-                                                             |TI(g1,r1) -> (if (( r1=y) and (equalsets g g1)) then true else false)
-                                                             |FE((g1, r1)) ->(if (( r1=y) and (equalsets g g1)) then true else false)
-                                                             |ImpI(px,(g1,r1))->(if (( r1=y) and (equalsets g g1)) then true else false)
-                                                             |ImpE(px,py,(g1,r1 ))->(if (( r1=y) and (equalsets g g1)) then true else false)
-                                                             |AndI(px,py,(g1,r1 ))->(if (( r1=y) and (equalsets g g1)) then true else false)
-                                                             |AndEleft(px,(g1,r1))->(if (( r1=y) and (equalsets g g1)) then true else false)
-                                                             |AndEright(px,(g1,r1))->(if (( r1=y) and (equalsets g g1)) then true else false)
-                                                             |OrIleft(px,(g1,r1))->(if (( r1=y) and (equalsets g g1)) then true else false)
-                                                             |OrIright(px,(g1,r1 ))->(if (( r1=y) and (equalsets g g1)) then true else false)
-                                                             |OrE(px,py,pz,(g1,r1))->(if (( r1=y) and (equalsets g g1)) then true else false)
-                                                             |NotClass(px,(g1,r1 ))->(if (( r1=y) and (equalsets g g1)) then true else false) 
-                                                             |NotIntu(px,(g1, r1))->(if (( r1=y) and (equalsets g g1)) then true else false)
-                                                             |_-> false )  else false)
-						 (*|OrE(p1,p2,p3,(g,r))->(if ((wfprooftree p1) && (wfprooftree p2) && (wfprooftree p3)) then ((match p1 with
-                                                                                                           |TI((g1,Or(x,y))) -> (if ((r=x) and (equalsets g g1)) then true else false)
-                                                                                                           |FE((g1,Or(x,y))) ->(if ((r=x) and (equalsets g g1)) then true else false)
-                                                                                                           |ImpI(px,(g1,r1))->(false)
-                                                                                                           |ImpE(px,py,(g1,Or(x,y)))->(if ((r=x) and (equalsets g g1)) then true else false)
-                                                                                                           |AndI(px,py,(g1,Or(x,y)))-> (if ((r=x) and (equalsets g g1)) then true else false)
-                                                                                                           |AndEleft(px,(g1,Or(x,y)))-> (if ((r=x) and (equalsets g g1)) then true else false)
-                                                                                                           |AndEright(px,(g1,Or(x,y)))-> (if ((r=x) and (equalsets g g1)) then true else false)
-                                                                                                           |OrIleft(px,(g1,Or(x,y)))-> (false)
-                                                                                                           |OrIright(px,(g1,Or(x,y)))-> (false)
-                                                                                                           |OrE(px,py,pz,(g1,Or(x,y)))->(if ((r=x) and (equalsets g g1)) then true else false)
-                                                                                                           |NotClass(px,(g1,Or(x,y)))-> (if ((r=x) and (equalsets g g1)) then true else false) 
-                                                                                                           |NotIntu(px,(g1,Or(x,y)))->(if ((r=x) and (equalsets g g1)) then true else false)
-                                                                                                           |_-> false) && (match p2 with) && (match p3 with))  else false)
-						 *)|NotClass(p,(g,r))-> (if (wfprooftree p) then ( match p with
-                                                              Ass((g1,r1))-> (if ((find_val g1 Not(r)) and (equalsets g1 (union g ([Not(r)]))) and (r1=F)) then true else false)
-                                                             |TI(g1,r1) -> (if ((find_val g1 Not(r)) and (equalsets g1 (union g ([Not(r)])))and (r1=F)) then true else false)
-                                                             |FE((g1, r1)) ->(if ((find_val g1 Not(r)) and (equalsets g1 (union g ([Not(r)]))) and (r1=F)) then true else false)
-                                                             |ImpI(px,(g1,r1))->(if ((find_val g1 Not(r)) and (equalsets g1 (union g ([Not(r)]))) and (r1=F)) then true else false)
-                                                             |ImpE(px,py,(g1,r1 ))->(if ((find_val g1 Not(r)) and (equalsets g1 (union g ([Not(r)]))) and (r1=F)) then true else false)
-                                                             |AndI(px,py,(g1,r1 ))->(if ((find_val g1 Not(r)) and (equalsets g1 (union g ([Not(r)]))) and (r1=F)) then true else false)
-                                                             |AndEleft(px,(g1,r1))->(if ((find_val g1 Not(r)) and (equalsets g1 (union g ([Not(r)]))) and (r1=F)) then true else false)
-                                                             |AndEright(px,(g1,r1))->(if ((find_val g1 Not(r)) and (equalsets g1 (union g ([Not(r)]))) and (r1=F)) then true else false)
-                                                             |OrIleft(px,(g1,r1))->(if ((find_val g1 Not(r)) and (equalsets g1 (union g ([Not(r)]))) and (r1=F)) then true else false)
-                                                             |OrIright(px,(g1,r1 ))->(if ((find_val g1 Not(r)) and (equalsets g1 (union g ([Not(r)]))) and (r1=F)) then true else false)
-                                                             |OrE(px,py,pz,(g1,r1))->(if ((find_val g1 Not(r)) and (equalsets g1 (union g ([Not(r)]))) and (r1=F)) then true else false)
-                                                             |NotClass(px,(g1,r1 ))->(if ((find_val g1 Not(r)) and (equalsets g1 (union g ([Not(r)]))) and (r1=F)) then true else false) 
-                                                             |NotIntu(px,(g1, r1))->(if ((find_val g1 Not(r)) and (equalsets g1 (union g ([Not(r)]))) and (r1=F)) then true else false)
-                                                             |_-> false )  else false)
-						 |NotIntu(p,(g,r))-> (if (wfprooftree p) then ( match p with 
-                                                              Ass((g1,r1))-> (if ((find_val g1 r) and (equalsets g1 (union g ([r]))) and (r1=F)) then true else false)
-                                                             |TI(g1,r1) -> (if ((find_val g1 r) and (equalsets g1 (union g ([r])))and (r1=F)) then true else false)
-                                                             |FE((g1, r1)) ->(if ((find_val g1 r) and (equalsets g1 (union g ([r]))) and (r1=F)) then true else false)
-                                                             |ImpI(px,(g1,r1))->(if ((find_val g1 r) and (equalsets g1 (union g ([r]))) and (r1=F)) then true else false)
-                                                             |ImpE(px,py,(g1,r1 ))->(if ((find_val g1 r) and (equalsets g1 (union g ([r]))) and (r1=F)) then true else false)
-                                                             |AndI(px,py,(g1,r1 ))->(if ((find_val g1 r) and (equalsets g1 (union g ([r]))) and (r1=F)) then true else false)
-                                                             |AndEleft(px,(g1,r1))->(if ((find_val g1 r) and (equalsets g1 (union g ([r]))) and (r1=F)) then true else false)
-                                                             |AndEright(px,(g1,r1))->(if ((find_val g1 r) and (equalsets g1 (union g ([r]))) and (r1=F)) then true else false)
-                                                             |OrIleft(px,(g1,r1))->(if ((find_val g1 r) and (equalsets g1 (union g ([r]))) and (r1=F)) then true else false)
-                                                             |OrIright(px,(g1,r1 ))->(if ((find_val g1 r) and (equalsets g1 (union g ([r]))) and (r1=F)) then true else false)
-                                                             |OrE(px,py,pz,(g1,r1))->(if ((find_val g1 r) and (equalsets g1 (union g ([r]))) and (r1=F)) then true else false)
-                                                             |NotClass(px,(g1,r1 ))->(if ((find_val g1 r) and (equalsets g1 (union g ([r]))) and (r1=F)) then true else false) 
-                                                             |NotIntu(px,(g1, r1))->(if ((find_val g1 r) and (equalsets g1 (union g ([r]))) and (r1=F)) then true else false)
-                                                             |_-> false ) else false) ;;
-                                                             *) 
+let rec wfprooftree x = match x with
+                         Ass((g,r))->(if (find_val g r) then true else false)
+                        |TI((g,r)) -> (if (r=T) then true else false) 
+                        |FE(g, r) -> (if ((find_val g r) && (find_val g F)) then true else false)
+                        |ImpI(p,(g, Implies(v,w)))-> if (wfprooftree p) then (match p with
+                                                                                 Ass((g,r))->( if ((find_val g v) && (w=r)) then true else false)
+                                                                                |TI((g,r)) -> (if ((find_val g v) && (w=r)) then true else false)
+                                                                                |FE((g,r)) ->(if ((find_val g v) && (w=r)) then true else false)
+                                                                                |ImpI(p,(g,r))-> (if ((find_val g v) && (w=r)) then true else false)
+                                                                                |ImpE(p1,p2,(g,r))-> (if ((find_val g v) && (w=r)) then true else false)
+                                                                                |AndI(p1,p2,(g,r))-> (if ((find_val g v) && (w=r)) then true else false)
+                                                                                |AndEleft(p,(g,r))-> (if ((find_val g v) && (w=r)) then true else false)
+                                                                                |AndEright(p,(g,r))-> (if ((find_val g v) && (w=r)) then true else false)
+                                                                                |OrIleft(p,(g,r))-> (if ((find_val g v) && (w=r)) then true else false)
+                                                                                |OrIright(p,(g,r))-> ( if ((find_val g v) && (w=r)) then true else false)
+                                                                                |OrE(p1,p2,p3,(g,r))-> (if ((find_val g v) && (w=r)) then true else false)
+                                                                                |NotClass(p,(g,r))-> (if ((find_val g v) && (w=r)) then true else false) 
+                                                                                |NotIntu(p,(g,r))->(if ((find_val g v) && (w=r)) then true else false) 
+                                                                                ) else false
+                        |ImpE(p1,p2,(g,r))-> if ((wfprooftree p1) && (wfprooftree p2)) then (match p1 with
+                                                                                               Ass((g1,Implies(v,w)))->( if ((equalsets g g1) && (w=r)) then verify p2 g v else false)
+                                                                                              |TI((g1,Implies(v,w))) -> (if ((equalsets g g1) && (w=r)) then verify p2 g v else false)
+                                                                                              |FE((g1,Implies(v,w))) ->(if ((equalsets g g1) && (w=r)) then verify p2 g v else false)
+                                                                                              |ImpI(px,(g1,Implies(v,w)))-> (if ((equalsets g g1) && (w=r)) then verify p2 g v else false)
+                                                                                              |ImpE(px1,px2,(g1,Implies(v,w)))-> (if ((equalsets g g1) && (w=r)) then verify p2 g v else false)
+                                                                                              |AndI(px1,px2,(g1,Implies(v,w)))-> (if ((equalsets g g1) && (w=r)) then verify p2 g v else false)
+                                                                                              |AndEleft(px,(g1,Implies(v,w)))-> (if ((equalsets g g1) && (w=r)) then verify p2 g v else false)
+                                                                                              |AndEright(px,(g1,Implies(v,w)))-> (if ((equalsets g g1) && (w=r)) then verify p2 g v else false)
+                                                                                              |OrIleft(px,(g1,Implies(v,w)))-> (if ((equalsets g g1) && (w=r)) then verify p2 g v else false)
+                                                                                              |OrIright(px,(g1,Implies(v,w)))-> ( if ((equalsets g g1) && (w=r)) then verify p2 g v else false)
+                                                                                              |OrE(px1,px2,px3,(g1,Implies(v,w)))-> (if ((equalsets g g1) && (w=r)) then verify p2 g v else false)
+                                                                                              |NotClass(px,(g1,Implies(v,w)))-> (if ((equalsets g g1) && (w=r)) then verify p2 g v else false) 
+                                                                                              |NotIntu(px,(g1,Implies(v,w)))->(if ((equalsets g g1) && (w=r)) then verify p2 g v else false)
+                                                                                              ) else false 
+                        |AndI(p1,p2,(g,And(v,w)))-> if ((wfprooftree p1) && (wfprooftree p2)) then ( match p1 with
+                                                                                                         Ass((g1,r1))-> (if (equalsets g g1) && (r1 =v) then true else false)
+                                                                                                         |TI((g1,r1)) -> (if (equalsets g g1) && (r1 =v) then true else false)
+                                                                                                         |FE((g1,r1)) ->(if (equalsets g g1) && (r1 = v) then true else false)
+                                                                                                         |ImpI(px,(g1,r1))->(if (equalsets g g1) && (r1 =v) then true else false) 
+                                                                                                         |ImpE(px,py,(g1,r1))-> (if (equalsets g g1) && (r1 =v) then true else false)
+                                                                                                         |AndI(px,py,(g1,r1))-> (if (equalsets g g1) && (r1 =v) then true else false)
+                                                                                                         |AndEleft(px,(g1,r1))-> (if (equalsets g g1) && (r1 =v) then true else false)
+                                                                                                         |AndEright(px,(g1,r1))-> (if (equalsets g g1) && (r1 =v) then true else false)
+                                                                                                         |OrIleft(px,(g1,r1))-> (if (equalsets g g1) && (r1 =v) then true else false)
+                                                                                                         |OrIright(px,(g1,r1))-> (if (equalsets g g1) && (r1 =v) then true else false)
+                                                                                                         |OrE(px,py,pz,(g1,r1))->(if (equalsets g g1) && (r1 =v) then true else false)
+                                                                                                         |NotClass(px,(g1,r1))-> (if (equalsets g g1) && (r1 =v) then true else false) 
+                                                                                                         |NotIntu(px,(g1,r1))->(if (equalsets g g1) && (r1 =v) then true else false)
+                                                                                                         ) && (match p2 with
+                                                                                                                              Ass((g1,r1))-> (if (equalsets g g1) && (r1 =w) then true else false)
+                                                                                                                              |TI((g1,r1)) -> (if (equalsets g g1) && (r1 =w) then true else false)
+                                                                                                                              |FE((g1,r1)) ->(if (equalsets g g1) && (r1 = w) then true else false)
+                                                                                                                              |ImpI(px,(g1,r1))->(if (equalsets g g1) && (r1 =w) then true else false) 
+                                                                                                                              |ImpE(px,py,(g1,r1))-> (if (equalsets g g1) && (r1 =w) then true else false)
+                                                                                                                              |AndI(px,py,(g1,r1))-> (if (equalsets g g1) && (r1 =w) then true else false)
+                                                                                                                              |AndEleft(px,(g1,r1))-> (if (equalsets g g1) && (r1 =w) then true else false)
+                                                                                                                              |AndEright(px,(g1,r1))-> (if (equalsets g g1) && (r1 =w) then true else false)
+                                                                                                                              |OrIleft(px,(g1,r1))-> (if (equalsets g g1) && (r1 =w) then true else false)
+                                                                                                                              |OrIright(px,(g1,r1))-> (if (equalsets g g1) && (r1 =w) then true else false)
+                                                                                                                              |OrE(px,py,pz,(g1,r1))->(if (equalsets g g1) && (r1 =w) then true else false)
+                                                                                                                              |NotClass(px,(g1,r1))-> (if (equalsets g g1) && (r1 =w) then true else false) 
+                                                                                                                              |NotIntu(px,(g1,r1))->(if (equalsets g g1) && (r1 =w) then true else false)
+                                                                                                                              ) else false
+                        |AndEleft(p,(g,r))-> if (wfprooftree p) then (match p with 
+                                                                           |TI((g1,And(x,y))) -> (if ((r=x) && (equalsets g g1)) then true else false)
+                                                                           |FE((g1,And(x,y))) ->(if ((r=x) && (equalsets g g1)) then true else false)
+                                                                           |ImpI(px,(g1,r1))->(false)
+                                                                           |ImpE(px,py,(g1,And(x,y)))->(if ((r=x) && (equalsets g g1)) then true else false)
+                                                                           |AndI(px,py,(g1,And(x,y)))-> (if ((r=x) && (equalsets g g1)) then true else false)
+                                                                           |AndEleft(px,(g1,And(x,y)))-> (if ((r=x) && (equalsets g g1)) then true else false)
+                                                                           |AndEright(px,(g1,And(x,y)))-> (if ((r=x) && (equalsets g g1)) then true else false)
+                                                                           |OrIleft(px,(g1,And(x,y)))-> (false)
+                                                                           |OrIright(px,(g1,And(x,y)))-> (false)
+                                                                           |OrE(px,py,pz,(g1,And(x,y)))->(if ((r=x) && (equalsets g g1)) then true else false)
+                                                                           |NotClass(px,(g1,And(x,y)))-> (if ((r=x) && (equalsets g g1)) then true else false) 
+                                                                           |NotIntu(px,(g1,And(x,y)))->(if ((r=x) && (equalsets g g1)) then true else false)
+                                                                           ) else false 
+                        |AndEright(p,(g,r))-> if (wfprooftree p) then (match p with 
+                                                                           |TI((g1,And(x,y))) -> (if ((r=y) && (equalsets g g1)) then true else false)
+                                                                           |FE((g1,And(x,y))) ->(if ((r=y) && (equalsets g g1)) then true else false)
+                                                                           |ImpI(px,(g1,And(x,y)))->(if ((r=y) && (equalsets g g1)) then true else false)
+                                                                           |ImpE(px,py,(g1,And(x,y)))->(if ((r=y) && (equalsets g g1)) then true else false)
+                                                                           |AndI(px,py,(g1,And(x,y)))-> (if ((r=y) && (equalsets g g1)) then true else false)
+                                                                           |AndEleft(px,(g1,And(x,y)))-> (if ((r=y) && (equalsets g g1)) then true else false)
+                                                                           |AndEright(px,(g1,And(x,y)))-> (if ((r=y) && (equalsets g g1)) then true else false)
+                                                                           |OrIleft(px,(g1,And(x,y)))-> (if ((r=y) && (equalsets g g1)) then true else false)
+                                                                           |OrIright(px,(g1,And(x,y)))-> (if ((r=y) && (equalsets g g1)) then true else false)
+                                                                           |OrE(px,py,pz,(g1,And(x,y)))->(if ((r=y) && (equalsets g g1)) then true else false)
+                                                                           |NotClass(px,(g1,And(x,y)))-> (if ((r=y) && (equalsets g g1)) then true else false) 
+                                                                           |NotIntu(px,(g1,And(x,y)))->(if ((r=y) && (equalsets g g1)) then true else false)
+                                                                           ) else false 
+                        |OrIleft(p,(g,Or(v,w)))-> if (wfprooftree p) then (  match p with 
+                                                                                   Ass((g1,r1))-> (if (( r1=v) && (equalsets g g1)) then true else false)
+                                                                                  |TI(g1,r1) -> (if (( r1=v) && (equalsets g g1)) then true else false)
+                                                                                  |FE((g1, r1)) ->(if (( r1=v) && (equalsets g g1)) then true else false)
+                                                                                  |ImpI(px,(g1,r1))->(if (( r1=v) && (equalsets g g1)) then true else false)
+                                                                                  |ImpE(px,py,(g1,r1 ))->(if (( r1=v) && (equalsets g g1)) then true else false)
+                                                                                  |AndI(px,py,(g1,r1 ))->(if (( r1=v) && (equalsets g g1)) then true else false)
+                                                                                  |AndEleft(px,(g1,r1))->(if (( r1=v) && (equalsets g g1)) then true else false)
+                                                                                  |AndEright(px,(g1,r1))->(if (( r1=v) && (equalsets g g1)) then true else false)
+                                                                                  |OrIleft(px,(g1,r1))->(if (( r1=v) && (equalsets g g1)) then true else false)
+                                                                                  |OrIright(px,(g1,r1 ))->(if (( r1=v) && (equalsets g g1)) then true else false)
+                                                                                  |OrE(px,py,pz,(g1,r1))->(if (( r1=v) && (equalsets g g1)) then true else false)
+                                                                                  |NotClass(px,(g1,r1 ))->(if (( r1=v) && (equalsets g g1)) then true else false) 
+                                                                                  |NotIntu(px,(g1, r1))->(if (( r1=v) && (equalsets g g1)) then true else false)
+                                                                                   )  else false
+                        |OrIright(p,(g, Or(v,w)))-> if (wfprooftree p) then (  match p with 
+                                                                                   Ass((g1,r1))-> (if (( r1=w) && (equalsets g g1)) then true else false)
+                                                                                  |TI(g1,r1) -> (if (( r1=w) && (equalsets g g1)) then true else false)
+                                                                                  |FE((g1, r1)) ->(if (( r1=w) && (equalsets g g1)) then true else false)
+                                                                                  |ImpI(px,(g1,r1))->(if (( r1=w) && (equalsets g g1)) then true else false)
+                                                                                  |ImpE(px,py,(g1,r1 ))->(if (( r1=w) && (equalsets g g1)) then true else false)
+                                                                                  |AndI(px,py,(g1,r1 ))->(if (( r1=w) && (equalsets g g1)) then true else false)
+                                                                                  |AndEleft(px,(g1,r1))->(if (( r1=w) && (equalsets g g1)) then true else false)
+                                                                                  |AndEright(px,(g1,r1))->(if (( r1=w) && (equalsets g g1)) then true else false)
+                                                                                  |OrIleft(px,(g1,r1))->(if (( r1=w) && (equalsets g g1)) then true else false)
+                                                                                  |OrIright(px,(g1,r1 ))->(if (( r1=w) && (equalsets g g1)) then true else false)
+                                                                                  |OrE(px,py,pz,(g1,r1))->(if (( r1=w) && (equalsets g g1)) then true else false)
+                                                                                  |NotClass(px,(g1,r1 ))->(if (( r1=w) && (equalsets g g1)) then true else false) 
+                                                                                  |NotIntu(px,(g1, r1))->(if (( r1=w) && (equalsets g g1)) then true else false)
+                                                                                  )  else false
+                        |OrE(p1,p2,p3,(g,r))-> if (wfprooftree p1) && (wfprooftree p2) && (wfprooftree p3) then (match p1 with
+                                                                                                               Ass((g1,Or(v,w)))-> (if ((equalsets g g1)) then verify_or p2 v r g && verify_or p3 w r g else false)
+                                                                                                              |TI(g1,Or(v,w)) -> (if ( (equalsets g g1)) then verify_or p2 v r g && verify_or p3 w r g else false)
+                                                                                                              |FE((g1, Or(v,w))) ->(if ( (equalsets g g1)) then verify_or p2 v r g && verify_or p3 w r g else false)
+                                                                                                              |ImpI(px,(g1,Or(v,w)))->(if ((equalsets g g1)) then verify_or p2 v r g && verify_or p3 w r g else false)
+                                                                                                              |ImpE(px,py,(g1,Or(v,w) ))->(if ((equalsets g g1)) then verify_or p2 v r g && verify_or p3 w r g else false)
+                                                                                                              |AndI(px,py,(g1,Or(v,w) ))->(if ((equalsets g g1)) then verify_or p2 v r g && verify_or p3 w r g else false)
+                                                                                                              |AndEleft(px,(g1,Or(v,w)))->(if ((equalsets g g1)) then verify_or p2 v r g && verify_or p3 w r g else false)
+                                                                                                              |AndEright(px,(g1,Or(v,w)))->(if ( (equalsets g g1)) then verify_or p2 v r g && verify_or p3 w r g else false)
+                                                                                                              |OrIleft(px,(g1,Or(v,w)))->(if ( (equalsets g g1)) then verify_or p2 v r g && verify_or p3 w r g else false)
+                                                                                                              |OrIright(px,(g1,Or(v,w) ))->(if ((equalsets g g1)) then verify_or p2 v r g && verify_or p3 w r g else false)
+                                                                                                              |OrE(px,py,pz,(g1,Or(v,w)))->(if ((equalsets g g1)) then verify_or p2 v r g && verify_or p3 w r g else false)
+                                                                                                              |NotClass(px,(g1,Or(v,w)))->(if ((equalsets g g1)) then verify_or p2 v r g && verify_or p3 w r g else false) 
+                                                                                                              |NotIntu(px,(g1,Or(v,w)))->(if ((equalsets g g1)) then verify_or p2 v r g && verify_or p3 w r g else false)
+                                                                                                              ) else false
+                        |NotClass(p,(g,r))-> if (wfprooftree p) then (match p with
+                                                                            Ass((g1,r1))-> (if ((find_val g1 (Not(r))) && (equalsets g1 (union g ([Not(r)]))) && (r1=F)) then true else false)
+                                                                           |TI(g1,r1) -> (if ((find_val g1 (Not(r))) && (equalsets g1 (union g ([Not(r)]))) && (r1=F)) then true else false)
+                                                                           |FE((g1, r1)) ->(if ((find_val g1 (Not(r))) && (equalsets g1 (union g ([Not(r)]))) && (r1=F)) then true else false)
+                                                                           |ImpI(px,(g1,r1))->(if ((find_val g1 (Not(r))) && (equalsets g1 (union g ([Not(r)]))) && (r1=F)) then true else false)
+                                                                           |ImpE(px,py,(g1,r1 ))->(if ((find_val g1 (Not(r))) && (equalsets g1 (union g ([Not(r)]))) && (r1=F)) then true else false)
+                                                                           |AndI(px,py,(g1,r1 ))->(if ((find_val g1 (Not(r))) && (equalsets g1 (union g ([Not(r)]))) && (r1=F)) then true else false)
+                                                                           |AndEleft(px,(g1,r1))->(if ((find_val g1 (Not(r))) && (equalsets g1 (union g ([Not(r)]))) && (r1=F)) then true else false)
+                                                                           |AndEright(px,(g1,r1))->(if ((find_val g1 (Not(r))) && (equalsets g1 (union g ([Not(r)]))) && (r1=F)) then true else false)
+                                                                           |OrIleft(px,(g1,r1))->(if ((find_val g1 (Not(r))) && (equalsets g1 (union g ([Not(r)]))) && (r1=F)) then true else false)
+                                                                           |OrIright(px,(g1,r1 ))->(if ((find_val g1 (Not(r))) && (equalsets g1 (union g ([Not(r)]))) && (r1=F)) then true else false)
+                                                                           |OrE(px,py,pz,(g1,r1))->(if ((find_val g1 (Not(r))) && (equalsets g1 (union g ([Not(r)]))) && (r1=F)) then true else false)
+                                                                           |NotClass(px,(g1,r1 ))->(if ((find_val g1 (Not(r))) && (equalsets g1 (union g ([Not(r)]))) && (r1=F)) then true else false) 
+                                                                           |NotIntu(px,(g1, r1))->(if ((find_val g1 (Not(r))) && (equalsets g1 (union g ([Not(r)]))) && (r1=F)) then true else false)
+                                                                           ) else false 
+                        |NotIntu(p,(g,r))-> if (wfprooftree p) then ( match p with 
+                                                                            Ass((g1,r1))-> (if ((equalsets g1 g) && (r1=F)) then true else false)
+                                                                           |TI(g1,r1) -> (if ((equalsets g1 g) && (r1=F)) then true else false)
+                                                                           |FE((g1, r1)) ->(if ((equalsets g1 g) && (r1=F)) then true else false)
+                                                                           |ImpI(px,(g1,r1))->(if ((equalsets g1 g) && (r1=F)) then true else false)
+                                                                           |ImpE(px,py,(g1,r1 ))->(if ((equalsets g1 g) && (r1=F)) then true else false)
+                                                                           |AndI(px,py,(g1,r1 ))->(if ((equalsets g1 g) && (r1=F)) then true else false)
+                                                                           |AndEleft(px,(g1,r1))->(if ((equalsets g1 g) && (r1=F)) then true else false)
+                                                                           |AndEright(px,(g1,r1))->(if ((equalsets g1 g) && (r1=F)) then true else false)
+                                                                           |OrIleft(px,(g1,r1))->(if ((equalsets g1 g) && (r1=F)) then true else false)
+                                                                           |OrIright(px,(g1,r1 ))->(if ((equalsets g1 g) && (r1=F)) then true else false)
+                                                                           |OrE(px,py,pz,(g1,r1))->(if ((equalsets g1 g) && (r1=F)) then true else false)
+                                                                           |NotClass(px,(g1,r1 ))->(if ((equalsets g1 g) && (r1=F)) then true else false) 
+                                                                           |NotIntu(px,(g1, r1))->(if ((equalsets g1 g) && (r1=F)) then true else false)
+                                                                           ) else false
+                 ;; 
 (*Write a function pad, that given a well-formed proof tree and a set of additional assumptions, creates a new well-formed proof tree with the set of additional assumptions added at each node. (F1)*)
 
 let rec pad x y = match x with
@@ -471,7 +470,7 @@ let rec graft x y= match x with
                         Ass((g,r))-> add_tree x y
                        |TI((g,r)) -> add_tree x y
                        |FE((g,r)) -> add_tree x y
-                       |ImpI(p,(g,r))-> ImpI((graft p y), ( find_g (graft p y) , r))
+                       |ImpI(p,(g,Implies(r,s)))-> ImpI((graft p y), ( union (find_g (graft p y)) [r] , Implies(r,s)))
                        |ImpE(p1,p2,(g,r))-> ImpE((graft p1 y),(graft p2 y),(find_g (graft p1 y),r))
                        |AndI(p1,p2,(g,r))-> AndI((graft p1 y),(graft p2 y),(find_g (graft p1 y),r))
                        |AndEleft(p,(g,r))->AndEleft((graft p y),(find_g (graft p y),r))
@@ -522,12 +521,12 @@ let tree_nor = AndEleft (q1,(gamma,P "a"));;
 
 
 
-(*wfprooftree test_tree4;;
-- : bool = false
+wfprooftree test_tree4;;
+(*- : bool = false*)
 
 
-# wfprooftree test_fE;;
-- : bool = true*)
+wfprooftree test_fE;;
+(*- : bool = true*)
 
 
 pad test_tree4 [P "p3";P "p4"];;
