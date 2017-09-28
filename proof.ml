@@ -363,7 +363,7 @@ let rec change_tree t x = match t with
                     Ass((g,r))-> Ass(( intersect g x), r)
                    |TI((g,r)) ->TI((intersect g x), r)
                    |FE((g,r)) -> FE((intersect g x), r)
-                   |ImpI(p,(g,Implies(c,d)))->ImpI((change_tree p x), ((intersect g x), Implies(c,d)))
+                   |ImpI(p,(g,r))->ImpI((change_tree p x), ((intersect g x), r))
                    |ImpE(p1,p2,(g,r))-> ImpE((change_tree p1 x),(change_tree p2 x), ((intersect g x), r)) 
                    |AndI(p1,p2,(g,r))-> AndI((change_tree p1 x),(change_tree p2 x), ((intersect g x), r))
                    |AndEleft(p,(g,r))-> AndEleft((change_tree p x), ((intersect g x), r))
@@ -537,7 +537,7 @@ AndEleft(AndI (Ass ([P "p3"; P "p4"; P "p2"; P "p1"], P "p1"),Ass ([P
 "p1"], And (P "p1", P "p2"))), ([P "p3"; P "p4"; P "p2"; P "p1"], P "p2"))*)
 
 
-# pare test_tree6;; - :
+pare test_tree6;;
 (*prooftree = ImpI (Ass ([And (P "p", P "q")], And (P "p", P "q")), ([], Implies (And
 (P "p", P "q"), And (P "p", P "q"))))*)
 
