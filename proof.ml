@@ -395,49 +395,92 @@ let rec pare x= match x with
   
 (* Write a function graft that given a proof tree pi_0 of D |- p and a list of i proof trees pi_i for G |- q_i for each q_i   in D, returns a proof
  tree for G |- p, where the trees for  G |- q_i have replaced the leaves of the form D' |- q_i in a proof tree similar in shape to  pi_0.  (F3)*)
-(*let rec prop (g,r) y = match y with
-                             []-> [g]
-                            |x::xs -> match x with 
-                                      (p1,q1)-> if (q1 = r) then [p1] else prop (g,r) xs;;
-let rec find c y z = match c with
-                   []-> raise Blank_array
-                  |x::xs-> if (x=z) then (union [z] (prop y (difference c [z]))) else find xs y z;;
 
-let rec find_g y= match y with
-                  []-> raise Blank_array
-                  |x::xs-> match x with
-                             Ass((g,r))-> g
-                             |TI((g,r)) -> g
-                             |FE((g,r)) ->g
-                             |ImpI(p,(g,r))->g
-                             |ImpE(p1,p2,(g,r))->g
-                             |AndI(p1,p2,(g,r))-> g
-                             |AndEleft(p,(g,r))->g
-                             |AndEright(p,(g,r))->g
-                             |OrIleft(p,(g,r))->g
-                             |OrIright(p,(g,r))->g
-                             |OrE(p1,p2,p3,(g,r))->g
-                             |NotClass(p,(g,r))->g
-                             |NotIntu(p,(g,r))->g;;
+let rec add_tree s t= match s with 
+                       Ass((g,r))-> (match t with 
+                                                  []->  (Ass(g,r))
+                                                 | x::xs-> match x with
+                                                              Ass((g1,r1))-> (if (r1=r) then Ass((g1, r1)) else add_tree s xs )
+                                                             |TI((g1,r1)) -> (if (r1=r) then TI((g1,r1)) else add_tree s xs )
+                                                             |FE((g1,r1)) -> (if (r1=r) then FE((g1,r1)) else add_tree s xs )
+                                                             |ImpI(p1,(g1,r1))-> (if (r1=r) then ImpI(p1,(g1,r1)) else add_tree s xs )
+                                                             |ImpE(p1,p2,(g1,r1))-> (if (r1=r) then ImpE(p1,p2,(g1,r1)) else add_tree s xs ) 
+                                                             |AndI(p1,p2,(g1,r1))-> (if (r1=r) then AndI(p1,p2,(g1,r1)) else add_tree s xs )
+                                                             |AndEleft(p1,(g1,r1))->(if (r1=r) then AndEleft(p1,(g1,r1)) else add_tree s xs )
+                                                             |AndEright(p1,(g1,r1))->(if (r1=r) then AndEright(p1,(g1,r1)) else add_tree s xs )
+                                                             |OrIleft(p1,(g1,r1))->(if (r1=r) then OrIleft(p1,(g1,r1)) else add_tree s xs )
+                                                             |OrIright(p1,(g1,r1))->(if (r1=r) then OrIright(p1,(g1,r1)) else add_tree s xs )
+                                                             |OrE(p1,p2,p3,(g1,r1))->(if (r1=r) then OrE(p1,p2,p3,(g1,r1)) else add_tree s xs )
+                                                             |NotClass(p1,(g1,r1))-> (if (r1=r) then NotClass(p1,(g1,r1)) else add_tree s xs )
+                                                             |NotIntu(p1,(g1,r1))-> (if (r1=r) then NotIntu(p1,(g1,r1)) else add_tree s xs )
+                                      
+                                               )
+                       |TI((g,r)) ->(match t with 
+                                                  []->  (TI((g,r)))
+                                                 |x::xs-> match x with
+                                                              Ass((g1,r1))-> (if (r1=r) then Ass((g1, r1)) else add_tree s xs )
+                                                             |TI((g1,r1)) -> (if (r1=r) then TI((g1,r1)) else add_tree s xs )
+                                                             |FE((g1,r1)) -> (if (r1=r) then FE((g1,r1)) else add_tree s xs )
+                                                             |ImpI(p1,(g1,r1))-> (if (r1=r) then ImpI(p1,(g1,r1)) else add_tree s xs )
+                                                             |ImpE(p1,p2,(g1,r1))-> (if (r1=r) then ImpE(p1,p2,(g1,r1)) else add_tree s xs ) 
+                                                             |AndI(p1,p2,(g1,r1))-> (if (r1=r) then AndI(p1,p2,(g1,r1)) else add_tree s xs )
+                                                             |AndEleft(p1,(g1,r1))->(if (r1=r) then AndEleft(p1,(g1,r1)) else add_tree s xs )
+                                                             |AndEright(p1,(g1,r1))->(if (r1=r) then AndEright(p1,(g1,r1)) else add_tree s xs )
+                                                             |OrIleft(p1,(g1,r1))->(if (r1=r) then OrIleft(p1,(g1,r1)) else add_tree s xs )
+                                                             |OrIright(p1,(g1,r1))->(if (r1=r) then OrIright(p1,(g1,r1)) else add_tree s xs )
+                                                             |OrE(p1,p2,p3,(g1,r1))->(if (r1=r) then OrE(p1,p2,p3,(g1,r1)) else add_tree s xs )
+                                                             |NotClass(p1,(g1,r1))-> (if (r1=r) then NotClass(p1,(g1,r1)) else add_tree s xs )
+                                                             |NotIntu(p1,(g1,r1))-> (if (r1=r) then NotIntu(p1,(g1,r1)) else add_tree s xs )
+                                      
+                                               )
+                       |FE((g,r)) -> (match t with 
+                                                  []->  (FE((g,r)))
+                                                 |x::xs-> match x with
+                                                              Ass((g1,r1))-> (if (r1=r) then Ass((g1, r1)) else add_tree s xs )
+                                                             |TI((g1,r1)) -> (if (r1=r) then TI((g1,r1)) else add_tree s xs )
+                                                             |FE((g1,r1)) -> (if (r1=r) then FE((g1,r1)) else add_tree s xs )
+                                                             |ImpI(p1,(g1,r1))-> (if (r1=r) then ImpI(p1,(g1,r1)) else add_tree s xs )
+                                                             |ImpE(p1,p2,(g1,r1))-> (if (r1=r) then ImpE(p1,p2,(g1,r1)) else add_tree s xs ) 
+                                                             |AndI(p1,p2,(g1,r1))-> (if (r1=r) then AndI(p1,p2,(g1,r1)) else add_tree s xs )
+                                                             |AndEleft(p1,(g1,r1))->(if (r1=r) then AndEleft(p1,(g1,r1)) else add_tree s xs )
+                                                             |AndEright(p1,(g1,r1))->(if (r1=r) then AndEright(p1,(g1,r1)) else add_tree s xs )
+                                                             |OrIleft(p1,(g1,r1))->(if (r1=r) then OrIleft(p1,(g1,r1)) else add_tree s xs )
+                                                             |OrIright(p1,(g1,r1))->(if (r1=r) then OrIright(p1,(g1,r1)) else add_tree s xs )
+                                                             |OrE(p1,p2,p3,(g1,r1))->(if (r1=r) then OrE(p1,p2,p3,(g1,r1)) else add_tree s xs )
+                                                             |NotClass(p1,(g1,r1))-> (if (r1=r) then NotClass(p1,(g1,r1)) else add_tree s xs )
+                                                             |NotIntu(p1,(g1,r1))-> (if (r1=r) then NotIntu(p1,(g1,r1)) else add_tree s xs )
+                                      );;
+
+let find_g x= match x with
+                        Ass((g,r))-> g
+                        |TI((g,r)) -> g 
+                        |FE((g,r))-> g 
+                        |ImpI(p,(g,r)) -> g
+                        |ImpE(p1,p2,(g,r))-> g
+                        |AndI(p1,p2,(g,r))-> g
+                        |AndEleft(p,(g,r))-> g
+                        |AndEright(p,(g,r))-> g 
+                        |OrIleft(p,(g,r))-> g
+                        |OrIright(p,(g,r))-> g
+                        |OrE(p1,p2,p3,(g,r))-> g
+                        |NotClass(p,(g,r))-> g
+                        |NotIntu(p,(g,r)) -> g;; 
 
 
-let rec graft x y = match x with
-                       Ass((g,r))-> Ass((prop (g,r) y), r) 
-                       |TI((g,r)) -> TI((prop (g,r) y),r)
-                       |FE((g,r)) ->FE((find (find_g y) (g,r) F),r)
-                       |ImpI(p,(g,r))->ImpI((graft p y), ( find (find_g y) (g,r) r))
-                       |ImpE(p1,p2,(g,r))->ImpE((graft p1 y), (graft p2 y), ((find_g y),r))
-                       |AndI(p1,p2,(g,r))-> AndI((graft p1 y),(graft p2 y), ((find_g y),r))
-                       |AndEleft(p,(g,r))->AndEleft((graft p y), ((find_g y),r))
-                       |AndEright(p,(g,r))->AndEright((graft p y), ((find_g y),r))
-                       |OrIleft(p,(g,r))->IOrIleft((graft p y), ((find_g y),r))
-                       |OrIright(p,(g,r))->OrIright((graft p y), ((find_g y),r))
-                       |OrE(p1,p2,p3,(g,r))->OrE((graft p1 y),(graft p2 y),(graft p3 y),((find_g y),r))
-                       |NotClass(p,(g,r))->NotClass((graft p y), ((find_g y),r))
-                       |NotIntu(p,(g,r))->NotIntu((graft p y), ((find_g y),r));;
-
-
-*)
+let rec graft x y= match x with
+                        Ass((g,r))-> add_tree x y
+                       |TI((g,r)) -> add_tree x y
+                       |FE((g,r)) -> add_tree x y
+                       |ImpI(p,(g,r))-> ImpI((graft p y), ( find_g (graft p y) , r))
+                       |ImpE(p1,p2,(g,r))-> ImpE((graft p1 y),(graft p2 y),(find_g (graft p1 y),r))
+                       |AndI(p1,p2,(g,r))-> AndI((graft p1 y),(graft p2 y),(find_g (graft p1 y),r))
+                       |AndEleft(p,(g,r))->AndEleft((graft p y),(find_g (graft p y),r))
+                       |AndEright(p,(g,r))-> AndEright((graft p y),(find_g (graft p y),r))
+                       |OrIleft(p,(g,r))-> OrIleft((graft p y),(find_g (graft p y),r))
+                       |OrIright(p,(g,r))-> OrIright((graft p y),(find_g (graft p y),r))
+                       |OrE(p1,p2,p3,(g,r))->OrE((graft p1 y),(graft p2 y),(graft p3 y),(find_g (graft p1 y),r))
+                       |NotClass(p,(g,r))->NotClass((graft p y),(find_g (graft p y),r))
+                       |NotIntu(p,(g,r))-> NotIntu((graft p y),(find_g (graft p y),r));;
 (*
     Write a program normalise which removes all occurrences of r-pairs in a given well-formed proof tree (i.e., where an introduction rule is followed only by an  elimination rule of the main connective).*)
 
@@ -456,3 +499,53 @@ let rec graft x y = match x with
                    |OrE(p1,p2,p3,s)-> 1+ size(p1)+size(p2)+size(p3)
                    |NotClass(p,s)-> NotClass((normalise p), s) 
                    |NotIntu(p,s)-> NotIntu((normalise p), s) ;; *) 
+
+
+let gamma = [P "p2";P "p1";P "p3"];;
+let gamma2 = [And (P "p",P "q");Or (P "p2",P"q2")];; 
+let test_tree1 = Ass (gamma ,P "p1") ;;
+let test_tree2 = Ass (gamma ,P"p2") ;; 
+let test_tree3 = AndI (test_tree1,test_tree2,(gamma,(And (P "p1",P"p2"))));; 
+let test_tree4 = AndEleft (test_tree3,(gamma,P "p2"));; 
+let test_fE    = FE (F::gamma,P "p1");; 
+let test_tree5 = Ass (gamma2,And (P "p",P "q")) ;; 
+let test_tree6 = ImpI (test_tree5,([Or (P "p2",P "q2")],Implies (And (P "p",P "q"),And(P "p",P "q"))));;
+let gamma3 = [P "a"; P "b"];; 
+let tq1 = Ass (gamma3,P "a");;
+let tq2 = Ass (gamma3,P "b");; 
+let q1 = AndI (tq1, tq2, (gamma3,(And (P "a",P "b"))));;
+let q2 = OrIleft (tq2, (gamma3,(Or(P "b",P "c"))));; 
+let delta1 = [And (P "a",P"b")];; 
+let tp1 = Ass (delta1,(And (P "a",P "b")));; 
+let p = AndEleft (tp1,(delta1,(P "a")));; 
+let tree_nor = AndEleft (q1,(gamma,P "a"));;
+
+
+
+(*wfprooftree test_tree4;;
+- : bool = false
+
+
+# wfprooftree test_fE;;
+- : bool = true*)
+
+
+pad test_tree4 [P "p3";P "p4"];;
+(*- : prooftree =
+AndEleft(AndI (Ass ([P "p3"; P "p4"; P "p2"; P "p1"], P "p1"),Ass ([P 
+"p3"; P "p4"; P "p2"; P "p1"], P "p2"), ([P "p3"; P "p4"; P "p2"; P 
+"p1"], And (P "p1", P "p2"))), ([P "p3"; P "p4"; P "p2"; P "p1"], P "p2"))*)
+
+
+# pare test_tree6;; - :
+(*prooftree = ImpI (Ass ([And (P "p", P "q")], And (P "p", P "q")), ([], Implies (And
+(P "p", P "q"), And (P "p", P "q"))))*)
+
+graft p [q1;q2];;
+(*- : prooftree = AndEleft (AndI (Ass ([P "a"; P "b"], P "a"),Ass ([P "a"; 
+P "b"], P "b"),([P "a"; P "b"], And (P "a", P "b"))),([P "a"; P "b"], P 
+"a"))
+
+
+# normalize tree_nor;;
+- : prooftree = Ass ([P "a"; P "b"], P "a")*)
