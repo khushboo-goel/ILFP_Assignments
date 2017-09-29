@@ -465,39 +465,306 @@ let find_g x= match x with
                         |NotClass(p,(g,r))-> g
                         |NotIntu(p,(g,r)) -> g;; 
 
+let rec add x y= match x with
+                         Ass((g,r))->Ass ( union g [y], r)
+                        |TI((g,r)) -> TI(union g [y], r) 
+                        |FE((g,r))-> FE(union g [y], r) 
+                        |ImpI(p,(g,r)) -> ImpI(p,(union g [y],r))
+                        |ImpE(p1,p2,(g,r))-> ImpE(p1,p2,(union g [y],r))
+                        |AndI(p1,p2,(g,r))-> AndI(p1,p2,(union g [y],r))
+                        |AndEleft(p,(g,r))-> AndEleft(p,(union g [y],r))
+                        |AndEright(p,(g,r))-> AndEright(p,(union g [y],r))
+                        |OrIleft(p,(g,r))-> OrIleft(p,(union g [y],r))
+                        |OrIright(p,(g,r))-> OrIright(p,(union g [y],r))
+                        |OrE(p1,p2,p3,(g,r))->OrE(p1,p2,p3,(union g [y],r))
+                        |NotClass(p,(g,r))->NotClass(p,(union g [y],r))
+                        |NotIntu(p,(g,r)) ->NotIntu(p,(union g [y],r))
+                      ;;
+
 
 let rec graft x y= match x with
                         Ass((g,r))-> add_tree x y
                        |TI((g,r)) -> add_tree x y
                        |FE((g,r)) -> add_tree x y
-                       |ImpI(p,(g,Implies(r,s)))-> ImpI((graft p y), ( union (find_g (graft p y)) [r] , Implies(r,s)))
+                       |ImpI(p,(g,Implies(r,s)))-> ImpI(add (graft p y) r, (find_g (graft p y) , Implies(r,s)))
                        |ImpE(p1,p2,(g,r))-> ImpE((graft p1 y),(graft p2 y),(find_g (graft p1 y),r))
                        |AndI(p1,p2,(g,r))-> AndI((graft p1 y),(graft p2 y),(find_g (graft p1 y),r))
                        |AndEleft(p,(g,r))->AndEleft((graft p y),(find_g (graft p y),r))
                        |AndEright(p,(g,r))-> AndEright((graft p y),(find_g (graft p y),r))
                        |OrIleft(p,(g,r))-> OrIleft((graft p y),(find_g (graft p y),r))
                        |OrIright(p,(g,r))-> OrIright((graft p y),(find_g (graft p y),r))
-                       |OrE(p1,p2,p3,(g,r))->OrE((graft p1 y),(graft p2 y),(graft p3 y),(find_g (graft p1 y),r))
+                       |OrE(p1,p2,p3,(g,r))->(match p1 with
+                                                   Ass((g,And(v,w)))-> OrE((graft p1 y),add (graft p2 y) v, add (graft p3 y) w,(find_g (graft p1 y),r))
+                                                  |TI((g,And(v,w))) -> OrE((graft p1 y),add (graft p2 y) v, add (graft p3 y) w,(find_g (graft p1 y),r))
+                                                  |FE((g,And(v,w)))-> OrE((graft p1 y),add (graft p2 y) v, add (graft p3 y) w,(find_g (graft p1 y),r))
+                                                  |ImpI(p,(g,And(v,w))) ->OrE((graft p1 y),add (graft p2 y) v, add (graft p3 y) w,(find_g (graft p1 y),r))
+                                                  |ImpE(p1,p2,(g,And(v,w)))->OrE((graft p1 y),add (graft p2 y) v, add (graft p3 y) w,(find_g (graft p1 y),r))
+                                                  |AndI(p1,p2,(g,And(v,w)))->OrE((graft p1 y),add (graft p2 y) v, add (graft p3 y) w,(find_g (graft p1 y),r)) 
+                                                  |AndEleft(p,(g,And(v,w)))->OrE((graft p1 y),add (graft p2 y) v, add (graft p3 y) w,(find_g (graft p1 y),r))
+                                                  |AndEright(p,(g,And(v,w)))->OrE((graft p1 y),add (graft p2 y) v, add (graft p3 y) w,(find_g (graft p1 y),r)) 
+                                                  |OrIleft(p,(g,And(v,w)))-> OrE((graft p1 y),add (graft p2 y) v, add (graft p3 y) w,(find_g (graft p1 y),r))
+                                                  |OrIright(p,(g,And(v,w)))-> OrE((graft p1 y),add (graft p2 y) v, add (graft p3 y) w,(find_g (graft p1 y),r))
+                                                  |OrE(p1,p2,p3,(g,And(v,w)))->OrE((graft p1 y),add (graft p2 y) v, add (graft p3 y) w,(find_g (graft p1 y),r))
+                                                  |NotClass(p,(g,And(v,w)))-> OrE((graft p1 y),add (graft p2 y) v, add (graft p3 y) w,(find_g (graft p1 y),r))
+                                                  |NotIntu(p,(g,And(v,w))) -> OrE((graft p1 y),add (graft p2 y) v, add (graft p3 y) w,(find_g (graft p1 y),r))) 
                        |NotClass(p,(g,r))->NotClass((graft p y),(find_g (graft p y),r))
                        |NotIntu(p,(g,r))-> NotIntu((graft p y),(find_g (graft p y),r));;
+
 (*
     Write a program normalise which removes all occurrences of r-pairs in a given well-formed proof tree (i.e., where an introduction rule is followed only by an  elimination rule of the main connective).*)
+let add_norm x y = match x with
+                        Ass((g,r))-> (match y with
+                                        Ass((g1,r1))-> graft (Ass((difference g [r1], r))) [y]
+                                        |TI((g1,r1)) ->   graft (Ass((difference g [r1], r))) [y]
+                                        |FE((g1,r1))->  graft (Ass((difference g [r1], r))) [y]
+                                        |ImpI(px,(g1,r1)) ->  graft (Ass((difference g [r1], r))) [y]
+                                        |ImpE(px,py,(g1,r1))->  graft (Ass((difference g [r1], r))) [y]
+                                        |AndI(px,py,(g1,r1))->   graft (Ass((difference g [r1], r))) [y]
+                                        |AndEleft(px,(g1,r1))->  graft (Ass((difference g [r1], r))) [y]
+                                        |AndEright(px,(g1,r1))->  graft (Ass((difference g [r1], r))) [y] 
+                                        |OrIleft(px,(g1,r1))->   graft (Ass((difference g [r1], r))) [y]
+                                        |OrIright(px,(g1,r1))->   graft (Ass((difference g [r1], r))) [y]
+                                        |OrE(px,py,pz,(g1,r1))->   graft (Ass((difference g [r1], r))) [y] 
+                                        |NotClass(px,(g1,r1))->   graft (Ass((difference g [r1], r))) [y]
+                                        |NotIntu(px,(g1,r1)) ->  graft (Ass((difference g [r1], r))) [y]
+                                      )
+
+                        |TI((g,r)) -> (match y with
+                                        Ass((g1,r1))-> graft (TI((difference g [r1], r))) [y]
+                                        |TI((g1,r1)) ->   graft (TI((difference g [r1], r))) [y]
+                                        |FE((g1,r1))->  graft (TI((difference g [r1], r))) [y]
+                                        |ImpI(px,(g1,r1)) ->  graft (TI((difference g [r1], r))) [y]
+                                        |ImpE(px,py,(g1,r1))->graft (TI((difference g [r1], r))) [y]
+                                        |AndI(px,py,(g1,r1))-> graft (TI((difference g [r1], r))) [y]
+                                        |AndEleft(px,(g1,r1))->graft (TI((difference g [r1], r))) [y]
+                                        |AndEright(px,(g1,r1))-> graft (TI((difference g [r1], r))) [y]
+                                        |OrIleft(px,(g1,r1))-> graft (TI((difference g [r1], r))) [y]
+                                        |OrIright(px,(g1,r1))->graft (TI((difference g [r1], r))) [y]
+                                        |OrE(px,py,pz,(g1,r1))->graft (TI((difference g [r1], r))) [y]
+                                        |NotClass(px,(g1,r1))->graft (TI((difference g [r1], r))) [y]
+                                        |NotIntu(px,(g1,r1)) ->graft (TI((difference g [r1], r))) [y]
+                                      ) 
+                        |FE((g,r))-> (match y with
+                                        Ass((g1,r1))-> graft (FE((difference g [r1], r))) [y]
+                                        |TI((g1,r1)) -> graft (FE((difference g [r1], r))) [y]
+                                        |FE((g1,r1))-> graft (FE((difference g [r1], r))) [y]
+                                        |ImpI(px,(g1,r1)) -> graft (FE((difference g [r1], r))) [y]
+                                        |ImpE(px,py,(g1,r1))->graft (FE((difference g [r1], r))) [y]
+                                        |AndI(px,py,(g1,r1))->graft (FE((difference g [r1], r))) [y]
+                                        |AndEleft(px,(g1,r1))->graft (FE((difference g [r1], r))) [y]
+                                        |AndEright(px,(g1,r1))->graft (FE((difference g [r1], r))) [y] 
+                                        |OrIleft(px,(g1,r1))->graft (FE((difference g [r1], r))) [y]
+                                        |OrIright(px,(g1,r1))-> graft (FE((difference g [r1], r))) [y]
+                                        |OrE(px,py,pz,(g1,r1))-> graft (FE((difference g [r1], r))) [y]
+                                        |NotClass(px,(g1,r1))->graft (FE((difference g [r1], r))) [y]
+                                        |NotIntu(px,(g1,r1)) ->graft (FE((difference g [r1], r))) [y]
+                                      )  
+                        |ImpI(p,(g,r)) -> (match y with
+                                        Ass((g1,r1))-> graft (ImpI(p,(difference g [r1], r))) [y]
+                                        |TI((g1,r1)) -> graft (ImpI(p,(difference g [r1], r))) [y]
+                                        |FE((g1,r1))-> graft (ImpI(p,(difference g [r1], r))) [y]
+                                        |ImpI(px,(g1,r1)) ->graft (ImpI(p,(difference g [r1], r))) [y]
+                                        |ImpE(px,py,(g1,r1))->graft (ImpI(p,(difference g [r1], r))) [y]
+                                        |AndI(px,py,(g1,r1))-> graft (ImpI(p,(difference g [r1], r))) [y]
+                                        |AndEleft(px,(g1,r1))->graft (ImpI(p,(difference g [r1], r))) [y]
+                                        |AndEright(px,(g1,r1))->graft (ImpI(p,(difference g [r1], r))) [y]
+                                        |OrIleft(px,(g1,r1))->graft (ImpI(p,(difference g [r1], r))) [y]
+                                        |OrIright(px,(g1,r1))->graft (ImpI(p,(difference g [r1], r))) [y]
+                                        |OrE(px,py,pz,(g1,r1))->graft (ImpI(p,(difference g [r1], r))) [y]
+                                        |NotClass(px,(g1,r1))->graft (ImpI(p,(difference g [r1], r))) [y]
+                                        |NotIntu(px,(g1,r1)) -> graft (ImpI(p,(difference g [r1], r))) [y]
+                                      )
+                        |ImpE(p1,p2,(g,r))-> (match y with
+                                        Ass((g1,r1))-> graft (ImpE(p1,p2,(difference g [r1], r))) [y]
+                                        |TI((g1,r1)) -> graft (ImpE(p1,p2,(difference g [r1], r))) [y]
+                                        |FE((g1,r1))->  graft (ImpE(p1,p2,(difference g [r1], r))) [y]
+                                        |ImpI(px,(g1,r1)) ->graft (ImpE(p1,p2,(difference g [r1], r))) [y]
+                                        |ImpE(px,py,(g1,r1))->graft (ImpE(p1,p2,(difference g [r1], r))) [y]
+                                        |AndI(px,py,(g1,r1))->graft (ImpE(p1,p2,(difference g [r1], r))) [y]
+                                        |AndEleft(px,(g1,r1))->graft (ImpE(p1,p2,(difference g [r1], r))) [y]
+                                        |AndEright(px,(g1,r1))->graft (ImpE(p1,p2,(difference g [r1], r))) [y]
+                                        |OrIleft(px,(g1,r1))->graft (ImpE(p1,p2,(difference g [r1], r))) [y]
+                                        |OrIright(px,(g1,r1))->graft (ImpE(p1,p2,(difference g [r1], r))) [y]
+                                        |OrE(px,py,pz,(g1,r1))->graft (ImpE(p1,p2,(difference g [r1], r))) [y]
+                                        |NotClass(px,(g1,r1))->graft (ImpE(p1,p2,(difference g [r1], r))) [y]
+                                        |NotIntu(px,(g1,r1)) ->graft (ImpE(p1,p2,(difference g [r1], r))) [y]
+                                      )
+                        |AndI(p1,p2,(g,r))-> (match y with
+                                        Ass((g1,r1))-> graft (AndI(p1,p2,(difference g [r1], r))) [y]
+                                        |TI((g1,r1)) -> graft (AndI(p1,p2,(difference g [r1], r))) [y]
+                                        |FE((g1,r1))-> graft (AndI(p1,p2,(difference g [r1], r))) [y]
+                                        |ImpI(px,(g1,r1)) -> graft (AndI(p1,p2,(difference g [r1], r))) [y]
+                                        |ImpE(px,py,(g1,r1))->  graft (AndI(p1,p2,(difference g [r1], r))) [y]
+                                        |AndI(px,py,(g1,r1))->  graft (AndI(p1,p2,(difference g [r1], r))) [y]
+                                        |AndEleft(px,(g1,r1))-> graft (AndI(p1,p2,(difference g [r1], r))) [y]
+                                        |AndEright(px,(g1,r1))-> graft (AndI(p1,p2,(difference g [r1], r))) [y]
+                                        |OrIleft(px,(g1,r1))-> graft (AndI(p1,p2,(difference g [r1], r))) [y]
+                                        |OrIright(px,(g1,r1))-> graft (AndI(p1,p2,(difference g [r1], r))) [y]
+                                        |OrE(px,py,pz,(g1,r1))-> graft (AndI(p1,p2,(difference g [r1], r))) [y] 
+                                        |NotClass(px,(g1,r1))-> graft (AndI(p1,p2,(difference g [r1], r))) [y]
+                                        |NotIntu(px,(g1,r1)) -> graft (AndI(p1,p2,(difference g [r1], r))) [y]
+                                      )
+                        |AndEleft(p,(g,r))->(match y with
+                                        Ass((g1,r1))-> graft (AndEleft(p,(difference g [r1], r))) [y]
+                                        |TI((g1,r1)) ->  graft (AndEleft(p,(difference g [r1], r))) [y]
+                                        |FE((g1,r1))->  graft (AndEleft(p,(difference g [r1], r))) [y]
+                                        |ImpI(px,(g1,r1)) -> graft (AndEleft(p,(difference g [r1], r))) [y]
+                                        |ImpE(px,py,(g1,r1))->  graft (AndEleft(p,(difference g [r1], r))) [y]
+                                        |AndI(px,py,(g1,r1))->  graft (AndEleft(p,(difference g [r1], r))) [y]
+                                        |AndEleft(px,(g1,r1))-> graft (AndEleft(p,(difference g [r1], r))) [y]
+                                        |AndEright(px,(g1,r1))-> graft (AndEleft(p,(difference g [r1], r))) [y]
+                                        |OrIleft(px,(g1,r1))-> graft (AndEleft(p,(difference g [r1], r))) [y]
+                                        |OrIright(px,(g1,r1))-> graft (AndEleft(p,(difference g [r1], r))) [y]
+                                        |OrE(px,py,pz,(g1,r1))-> graft (AndEleft(p,(difference g [r1], r))) [y] 
+                                        |NotClass(px,(g1,r1))-> graft (AndEleft(p,(difference g [r1], r))) [y]
+                                        |NotIntu(px,(g1,r1)) ->  graft (AndEleft(p,(difference g [r1], r))) [y]
+                                      )
+                        |AndEright(p,(g,r))-> (match y with
+                                        Ass((g1,r1))-> graft (AndEright(p,(difference g [r1], r))) [y]
+                                        |TI((g1,r1)) ->graft (AndEright(p,(difference g [r1], r))) [y]
+                                        |FE((g1,r1))->graft (AndEright(p,(difference g [r1], r))) [y]
+                                        |ImpI(px,(g1,r1)) ->graft (AndEright(p,(difference g [r1], r))) [y]
+                                        |ImpE(px,py,(g1,r1))->graft (AndEright(p,(difference g [r1], r))) [y]
+                                        |AndI(px,py,(g1,r1))-> graft (AndEright(p,(difference g [r1], r))) [y]
+                                        |AndEleft(px,(g1,r1))->graft (AndEright(p,(difference g [r1], r))) [y]
+                                        |AndEright(px,(g1,r1))->graft (AndEright(p,(difference g [r1], r))) [y]
+                                        |OrIleft(px,(g1,r1))->graft (AndEright(p,(difference g [r1], r))) [y]
+                                        |OrIright(px,(g1,r1))->graft (AndEright(p,(difference g [r1], r))) [y]
+                                        |OrE(px,py,pz,(g1,r1))-> graft (AndEright(p,(difference g [r1], r))) [y]
+                                        |NotClass(px,(g1,r1))->graft (AndEright(p,(difference g [r1], r))) [y]
+                                        |NotIntu(px,(g1,r1)) ->graft (AndEright(p,(difference g [r1], r))) [y]
+                                      )
+                        |OrIleft(p,(g,r))-> (match y with
+                                        Ass((g1,r1))-> graft (OrIleft(p,(difference g [r1], r))) [y]
+                                        |TI((g1,r1)) ->graft (OrIleft(p,(difference g [r1], r))) [y]
+                                        |FE((g1,r1))-> graft (OrIleft(p,(difference g [r1], r))) [y]
+                                        |ImpI(px,(g1,r1)) ->graft (OrIleft(p,(difference g [r1], r))) [y]
+                                        |ImpE(px,py,(g1,r1))-> graft (OrIleft(p,(difference g [r1], r))) [y]
+                                        |AndI(px,py,(g1,r1))-> graft (OrIleft(p,(difference g [r1], r))) [y]
+                                        |AndEleft(px,(g1,r1))->graft (OrIleft(p,(difference g [r1], r))) [y]
+                                        |AndEright(px,(g1,r1))->graft (OrIleft(p,(difference g [r1], r))) [y]
+                                        |OrIleft(px,(g1,r1))->graft (OrIleft(p,(difference g [r1], r))) [y]
+                                        |OrIright(px,(g1,r1))->graft (OrIleft(p,(difference g [r1], r))) [y]
+                                        |OrE(px,py,pz,(g1,r1))-> graft (OrIleft(p,(difference g [r1], r))) [y]
+                                        |NotClass(px,(g1,r1))->graft (OrIleft(p,(difference g [r1], r))) [y]
+                                        |NotIntu(px,(g1,r1)) ->graft (OrIleft(p,(difference g [r1], r))) [y]
+                                      )
+                        |OrIright(p,(g,r))-> (match y with
+                                        Ass((g1,r1))-> graft (OrIright(p,(difference g [r1], r))) [y]
+                                        |TI((g1,r1)) ->  graft (OrIright(p,(difference g [r1], r))) [y]
+                                        |FE((g1,r1))-> graft (OrIright(p,(difference g [r1], r))) [y]
+                                        |ImpI(px,(g1,r1)) -> graft (OrIright(p,(difference g [r1], r))) [y]
+                                        |ImpE(px,py,(g1,r1))-> graft (OrIright(p,(difference g [r1], r))) [y]
+                                        |AndI(px,py,(g1,r1))-> graft (OrIright(p,(difference g [r1], r))) [y]
+                                        |AndEleft(px,(g1,r1))-> graft (OrIright(p,(difference g [r1], r))) [y]
+                                        |AndEright(px,(g1,r1))-> graft (OrIright(p,(difference g [r1], r))) [y]
+                                        |OrIleft(px,(g1,r1))-> graft (OrIright(p,(difference g [r1], r))) [y]
+                                        |OrIright(px,(g1,r1))-> graft (OrIright(p,(difference g [r1], r))) [y]
+                                        |OrE(px,py,pz,(g1,r1))-> graft (OrIright(p,(difference g [r1], r))) [y] 
+                                        |NotClass(px,(g1,r1))-> graft (OrIright(p,(difference g [r1], r))) [y]
+                                        |NotIntu(px,(g1,r1)) -> graft (OrIright(p,(difference g [r1], r))) [y]
+                                      )
+                        |OrE(p1,p2,p3,(g,r))-> (match y with
+                                        Ass((g1,r1))-> graft (OrE(p1,p2,p3,(difference g [r1], r))) [y]
+                                        |TI((g1,r1)) -> graft (OrE(p1,p2,p3,(difference g [r1], r))) [y]
+                                        |FE((g1,r1))-> graft (OrE(p1,p2,p3,(difference g [r1], r))) [y]
+                                        |ImpI(px,(g1,r1)) -> graft (OrE(p1,p2,p3,(difference g [r1], r))) [y]
+                                        |ImpE(px,py,(g1,r1))-> graft (OrE(p1,p2,p3,(difference g [r1], r))) [y]
+                                        |AndI(px,py,(g1,r1))-> graft (OrE(p1,p2,p3,(difference g [r1], r))) [y]
+                                        |AndEleft(px,(g1,r1))-> graft (OrE(p1,p2,p3,(difference g [r1], r))) [y]
+                                        |AndEright(px,(g1,r1))-> graft (OrE(p1,p2,p3,(difference g [r1], r))) [y]
+                                        |OrIleft(px,(g1,r1))-> graft (OrE(p1,p2,p3,(difference g [r1], r))) [y]
+                                        |OrIright(px,(g1,r1))-> graft (OrE(p1,p2,p3,(difference g [r1], r))) [y]
+                                        |OrE(px,py,pz,(g1,r1))-> graft (OrE(p1,p2,p3,(difference g [r1], r))) [y]
+                                        |NotClass(px,(g1,r1))-> graft (OrE(p1,p2,p3,(difference g [r1], r))) [y]
+                                        |NotIntu(px,(g1,r1)) ->  graft (OrE(p1,p2,p3,(difference g [r1], r))) [y]
+                                      )
+                        |NotClass(p,(g,r))-> (match y with
+                                        Ass((g1,r1))-> graft (NotClass(p,(difference g [r1], r))) [y]
+                                        |TI((g1,r1)) ->  graft (NotClass(p,(difference g [r1], r))) [y]
+                                        |FE((g1,r1))-> graft (NotClass(p,(difference g [r1], r))) [y]
+                                        |ImpI(px,(g1,r1)) ->graft (NotClass(p,(difference g [r1], r))) [y]
+                                        |ImpE(px,py,(g1,r1))-> graft (NotClass(p,(difference g [r1], r))) [y]
+                                        |AndI(px,py,(g1,r1))-> graft (NotClass(p,(difference g [r1], r))) [y]
+                                        |AndEleft(px,(g1,r1))->graft (NotClass(p,(difference g [r1], r))) [y]
+                                        |AndEright(px,(g1,r1))->graft (NotClass(p,(difference g [r1], r))) [y]
+                                        |OrIleft(px,(g1,r1))->graft (NotClass(p,(difference g [r1], r))) [y]
+                                        |OrIright(px,(g1,r1))->graft (NotClass(p,(difference g [r1], r))) [y]
+                                        |OrE(px,py,pz,(g1,r1))-> graft (NotClass(p,(difference g [r1], r))) [y]
+                                        |NotClass(px,(g1,r1))->graft (NotClass(p,(difference g [r1], r))) [y]
+                                        |NotIntu(px,(g1,r1)) ->graft (NotClass(p,(difference g [r1], r))) [y]
+                                      )
+                        |NotIntu(p,(g,r)) -> (match y with
+                                        Ass((g1,r1))-> graft (NotIntu(p,(difference g [r1], r))) [y]
+                                        |TI((g1,r1)) ->graft (NotIntu(p,(difference g [r1], r))) [y]
+                                        |FE((g1,r1))-> graft (NotIntu(p,(difference g [r1], r))) [y]
+                                        |ImpI(px,(g1,r1)) ->graft (NotIntu(p,(difference g [r1], r))) [y]
+                                        |ImpE(px,py,(g1,r1))-> graft (NotIntu(p,(difference g [r1], r))) [y]
+                                        |AndI(px,py,(g1,r1))->graft (NotIntu(p,(difference g [r1], r))) [y]
+                                        |AndEleft(px,(g1,r1))->graft (NotIntu(p,(difference g [r1], r))) [y]
+                                        |AndEright(px,(g1,r1))->graft (NotIntu(p,(difference g [r1], r))) [y]
+                                        |OrIleft(px,(g1,r1))->graft (NotIntu(p,(difference g [r1], r))) [y]
+                                        |OrIright(px,(g1,r1))->graft (NotIntu(p,(difference g [r1], r))) [y]
+                                        |OrE(px,py,pz,(g1,r1))-> graft (NotIntu(p,(difference g [r1], r))) [y] 
+                                        |NotClass(px,(g1,r1))->graft (NotIntu(p,(difference g [r1], r))) [y]
+                                        |NotIntu(px,(g1,r1)) ->graft (NotIntu(p,(difference g [r1], r))) [y]
+                                      );;
 
 
-(*let rec normalise x= match x with
+let rec normalise x= match x with
                     Ass(s)->Ass(s) 
                    |TI(s) ->TI(s) 
                    |FE(s) ->FE(s)
                    |ImpI(p,s)-> ImpI((normalise p),s) 
-                   |ImpE(p1,p2,s)-> 
+                   |ImpE(p1,p2,s)-> (match p1 with
+                                         Ass((g,r))->ImpE(normalise p1, normalise p2,s)
+                                        |TI((g,r)) ->ImpE(normalise p1, normalise p2,s)
+                                        |FE((g,r))->ImpE(normalise p1, normalise p2,s) 
+                                        |ImpI(px,(g,r)) -> add_norm px p2
+                                        |ImpE(px,py,(g,r))-> ImpE(normalise p1, normalise p2,s)
+                                        |AndI(px,py,(g,r))-> ImpE(normalise p1, normalise p2,s)
+                                        |AndEleft(px,(g,r))-> ImpE(normalise p1, normalise p2,s)
+                                        |AndEright(px,(g,r))->ImpE(normalise p1, normalise p2,s)
+                                        |OrIleft(px,(g,r))-> ImpE(normalise p1, normalise p2,s)
+                                        |OrIright(px,(g,r))-> ImpE(normalise p1, normalise p2,s)
+                                        |OrE(px,py,pz,(g,r))->ImpE(normalise p1, normalise p2,s)
+                                        |NotClass(px,(g,r))->ImpE(normalise p1, normalise p2,s)
+                                        |NotIntu(px,(g,r)) ->ImpE(normalise p1, normalise p2,s))
                    |AndI(p1,p2,s)-> AndI((normalise p1),(normalise p2),s)
-                   |AndEleft(p,s)-> size(p)+1
-                   |AndEright(p,s)-> size(p)+1
+                   |AndEleft(p,s)-> (match p with
+                                        Ass((g,r))->AndEleft((normalise p),s) 
+                                        |TI((g,r)) ->AndEleft((normalise p),s)
+                                        |FE((g,r))->AndEleft((normalise p),s) 
+                                        |ImpI(px,(g,r)) -> AndEleft((normalise p),s)
+                                        |ImpE(px,py,(g,r))-> AndEleft((normalise p),s)
+                                        |AndI(px,py,(g,r))-> px
+                                        |AndEleft(px,(g,r))-> AndEleft((normalise p),s)
+                                        |AndEright(px,(g,r))->AndEleft((normalise p),s)
+                                        |OrIleft(px,(g,r))-> AndEleft((normalise p),s)
+                                        |OrIright(px,(g,r))->AndEleft((normalise p),s)
+                                        |OrE(px,py,pz,(g,r))->AndEleft((normalise p),s)
+                                        |NotClass(px,(g,r))->AndEleft((normalise p),s)
+                                        |NotIntu(px,(g,r)) ->AndEleft((normalise p),s))
+                   |AndEright(p,s)-> (match p with
+                                        Ass((g,r))->AndEleft((normalise p),s) 
+                                        |TI((g,r)) ->AndEleft((normalise p),s)
+                                        |FE((g,r))->AndEleft((normalise p),s) 
+                                        |ImpI(px,(g,r)) -> AndEleft((normalise p),s)
+                                        |ImpE(px,py,(g,r))-> AndEleft((normalise p),s)
+                                        |AndI(px,py,(g,r))-> py
+                                        |AndEleft(px,(g,r))-> AndEleft((normalise p),s)
+                                        |AndEright(px,(g,r))->AndEleft((normalise p),s)
+                                        |OrIleft(px,(g,r))-> AndEleft((normalise p),s)
+                                        |OrIright(px,(g,r))->AndEleft((normalise p),s)
+                                        |OrE(px,py,pz,(g,r))->AndEleft((normalise p),s)
+                                        |NotClass(px,(g,r))->AndEleft((normalise p),s)
+                                        |NotIntu(px,(g,r)) ->AndEleft((normalise p),s))
                    |OrIleft(p,s)-> OrIleft((normalise p), s)
                    |OrIright(p,s)-> OrIright((normalise p), s)
-                   |OrE(p1,p2,p3,s)-> 1+ size(p1)+size(p2)+size(p3)
+                   |OrE(p1,p2,p3,s)-> OrE(p1,p2,p3,s)
                    |NotClass(p,s)-> NotClass((normalise p), s) 
-                   |NotIntu(p,s)-> NotIntu((normalise p), s) ;; *) 
+                   |NotIntu(p,s)-> NotIntu((normalise p), s)
+    ;; 
 
 
 let gamma = [P "p2";P "p1";P "p3"];;
@@ -543,8 +810,7 @@ pare test_tree6;;
 graft p [q1;q2];;
 (*- : prooftree = AndEleft (AndI (Ass ([P "a"; P "b"], P "a"),Ass ([P "a"; 
 P "b"], P "b"),([P "a"; P "b"], And (P "a", P "b"))),([P "a"; P "b"], P 
-"a"))
+"a"))*)
 
-
-# normalize tree_nor;;
-- : prooftree = Ass ([P "a"; P "b"], P "a")*)
+normalise tree_nor;;
+(*- : prooftree = Ass ([P "a"; P "b"], P "a")*)
