@@ -721,7 +721,7 @@ let rec normalise x= match x with
                                          Ass((g,r))->ImpE(normalise p1, normalise p2,s)
                                         |TI((g,r)) ->ImpE(normalise p1, normalise p2,s)
                                         |FE((g,r))->ImpE(normalise p1, normalise p2,s) 
-                                        |ImpI(px,(g,r)) -> add_norm px p2
+                                        |ImpI(px,(g,r)) -> normalise (add_norm px p2)
                                         |ImpE(px,py,(g,r))-> ImpE(normalise p1, normalise p2,s)
                                         |AndI(px,py,(g,r))-> ImpE(normalise p1, normalise p2,s)
                                         |AndEleft(px,(g,r))-> ImpE(normalise p1, normalise p2,s)
@@ -738,7 +738,7 @@ let rec normalise x= match x with
                                         |FE((g,r))->AndEleft((normalise p),s) 
                                         |ImpI(px,(g,r)) -> AndEleft((normalise p),s)
                                         |ImpE(px,py,(g,r))-> AndEleft((normalise p),s)
-                                        |AndI(px,py,(g,r))-> py
+                                        |AndI(px,py,(g,r))-> normalise py
                                         |AndEleft(px,(g,r))-> AndEleft((normalise p),s)
                                         |AndEright(px,(g,r))->AndEleft((normalise p),s)
                                         |OrIleft(px,(g,r))-> AndEleft((normalise p),s)
@@ -752,7 +752,7 @@ let rec normalise x= match x with
                                         |FE((g,r))->AndEleft((normalise p),s) 
                                         |ImpI(px,(g,r)) -> AndEleft((normalise p),s)
                                         |ImpE(px,py,(g,r))-> AndEleft((normalise p),s)
-                                        |AndI(px,py,(g,r))-> px
+                                        |AndI(px,py,(g,r))-> normalise px
                                         |AndEleft(px,(g,r))-> AndEleft((normalise p),s)
                                         |AndEright(px,(g,r))->AndEleft((normalise p),s)
                                         |OrIleft(px,(g,r))-> AndEleft((normalise p),s)
@@ -771,8 +771,8 @@ let rec normalise x= match x with
                                         |AndI(px,py,(g,r))-> OrE((normalise p1),(normalise p2),(normalise p3),s)
                                         |AndEleft(px,(g,r))-> OrE((normalise p1),(normalise p2),(normalise p3),s)
                                         |AndEright(px,(g,r))->OrE((normalise p1),(normalise p2),(normalise p3),s)
-                                        |OrIleft(px,(g,r))-> add_norm p3 px
-                                        |OrIright(px,(g,r))-> add_norm p2 px
+                                        |OrIleft(px,(g,r))-> normalise (add_norm p3 px)
+                                        |OrIright(px,(g,r))-> normalise (add_norm p2 px)
                                         |OrE(px,py,pz,(g,r))->OrE((normalise p1),(normalise p2),(normalise p3),s)
                                         |NotClass(px,(g,r))->OrE((normalise p1),(normalise p2),(normalise p3),s)
                                         |NotIntu(px,(g,r)) ->OrE((normalise p1),(normalise p2),(normalise p3),s))
