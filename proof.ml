@@ -711,6 +711,7 @@ let add_norm x y = match x with
                                       );;
 
 
+
 let rec normalise x= match x with
                     Ass(s)->Ass(s) 
                    |TI(s) ->TI(s) 
@@ -737,7 +738,7 @@ let rec normalise x= match x with
                                         |FE((g,r))->AndEleft((normalise p),s) 
                                         |ImpI(px,(g,r)) -> AndEleft((normalise p),s)
                                         |ImpE(px,py,(g,r))-> AndEleft((normalise p),s)
-                                        |AndI(px,py,(g,r))-> px
+                                        |AndI(px,py,(g,r))-> py
                                         |AndEleft(px,(g,r))-> AndEleft((normalise p),s)
                                         |AndEright(px,(g,r))->AndEleft((normalise p),s)
                                         |OrIleft(px,(g,r))-> AndEleft((normalise p),s)
@@ -751,7 +752,7 @@ let rec normalise x= match x with
                                         |FE((g,r))->AndEleft((normalise p),s) 
                                         |ImpI(px,(g,r)) -> AndEleft((normalise p),s)
                                         |ImpE(px,py,(g,r))-> AndEleft((normalise p),s)
-                                        |AndI(px,py,(g,r))-> py
+                                        |AndI(px,py,(g,r))-> px
                                         |AndEleft(px,(g,r))-> AndEleft((normalise p),s)
                                         |AndEright(px,(g,r))->AndEleft((normalise p),s)
                                         |OrIleft(px,(g,r))-> AndEleft((normalise p),s)
@@ -761,7 +762,20 @@ let rec normalise x= match x with
                                         |NotIntu(px,(g,r)) ->AndEleft((normalise p),s))
                    |OrIleft(p,s)-> OrIleft((normalise p), s)
                    |OrIright(p,s)-> OrIright((normalise p), s)
-                   |OrE(p1,p2,p3,s)-> OrE(p1,p2,p3,s)
+                   |OrE(p1,p2,p3,s)-> (match p1 with
+                                        Ass((g,r))->OrE((normalise p1),(normalise p2),(normalise p3),s) 
+                                        |TI((g,r)) ->OrE((normalise p1),(normalise p2),(normalise p3),s)
+                                        |FE((g,r))->OrE((normalise p1),(normalise p2),(normalise p3),s) 
+                                        |ImpI(px,(g,r)) -> OrE((normalise p1),(normalise p2),(normalise p3),s)
+                                        |ImpE(px,py,(g,r))->OrE((normalise p1),(normalise p2),(normalise p3),s)
+                                        |AndI(px,py,(g,r))-> OrE((normalise p1),(normalise p2),(normalise p3),s)
+                                        |AndEleft(px,(g,r))-> OrE((normalise p1),(normalise p2),(normalise p3),s)
+                                        |AndEright(px,(g,r))->OrE((normalise p1),(normalise p2),(normalise p3),s)
+                                        |OrIleft(px,(g,r))-> add_norm p3 px
+                                        |OrIright(px,(g,r))-> add_norm p2 px
+                                        |OrE(px,py,pz,(g,r))->OrE((normalise p1),(normalise p2),(normalise p3),s)
+                                        |NotClass(px,(g,r))->OrE((normalise p1),(normalise p2),(normalise p3),s)
+                                        |NotIntu(px,(g,r)) ->OrE((normalise p1),(normalise p2),(normalise p3),s))
                    |NotClass(p,s)-> NotClass((normalise p), s) 
                    |NotIntu(p,s)-> NotIntu((normalise p), s)
     ;; 
@@ -814,3 +828,20 @@ P "b"], P "b"),([P "a"; P "b"], And (P "a", P "b"))),([P "a"; P "b"], P
 
 normalise tree_nor;;
 (*- : prooftree = Ass ([P "a"; P "b"], P "a")*)
+let p12=Ass([(Implies(P"p", (Implies(P"q", P"r")))); (Implies(P"p", P"q")); P"p"], (P"p"));;
+let p11=Ass([(Implies(P"p", (Implies(P"q", P"r")))); (Implies(P"p", P"q")); P"p"], (Implies(P"p", P"q")));;
+let p10=Ass([(Implies(P"p", (Implies(P"q", P"r")))); (Implies(P"p", P"q")); P"p"], (P"p"));;
+let p9=Ass([(Implies(P"p", (Implies(P"q", P"r")))); (Implies(P"p", P"q")); P"p"], (Implies(P"p", (Implies(P"q", P"r")))));;
+let p8=ImpE(p11,p12, ([(Implies(P"p", (Implies(P"q", P"r")))); (Implies(P"p", P"q")); P"p"], (P"q")));;
+let p7=ImpE(p9,p10, ([(Implies(P"p", (Implies(P"q", P"r")))); (Implies(P"p", P"q")); P"p"], (Implies(P"q", P"r"))));;
+let p6=ImpE(p7, p8,  ([(Implies(P"p", (Implies(P"q", P"r")))); (Implies(P"p", P"q")); P"p"], (P"r")));;
+let p5=ImpI(p6, ([(Implies(P"p", (Implies(P"q", P"r")))); (Implies(P"p", P"q"))], (Implies(P"p", P"r"))));;
+let p4=ImpI(p5, ([(Implies(P"p", (Implies(P"q", P"r"))))], (Implies((Implies(P"p", P"q")),(Implies(P"p", P"r"))))));;
+let p3=ImpI(p4, ([], (Implies((Implies(P"p", (Implies(P"q", P"r")))),(Implies((Implies(P"p", P"q")),(Implies(P"p", P"r")))) ))));;
+
+let p2=Ass([P"p"; P"q"], P"p");;                          
+let p1=ImpI(p2, ([P"p"],Implies(P"q", P"p") ));;                          
+let p0=ImpI(p1, ([], (Implies(P"p", Implies(P"q",P"p")))) );;
+
+wfprooftree p3;;
+wfprooftree p0;
